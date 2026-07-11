@@ -1,0 +1,3 @@
+<!-- res/raw/keep.xml -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_launcher_foreground,@drawable/bg_circle_white,@mipmap/ic_launcher" />

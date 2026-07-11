@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<desktop>
+    <first-screen>
+        <app type="WEATHER" />
+        <app type="GALLERY" />
+        <app type="SETTINGS" />
+        <app type="DIALER" />
+        <app type="MESSAGING" />
+        <app type="CONTACTS" />
+        <app type="CAMERA" />
+    </first-screen>
+    <second-screen>
+        <app package="com.tencent.mm" />
+        <app package="com.tencent.mobileqq" />
+        <app package="com.ss.android.ugc.aweme" />
+        <app package="com.smile.gifmaker" />
+        <app package="com.eg.android.AlipayGphone" />
+        <app package="com.autonavi.minimap" />
+    </second-screen>
+</desktop>

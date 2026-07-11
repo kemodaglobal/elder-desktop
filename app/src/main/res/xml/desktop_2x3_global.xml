@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<desktop>
+    <!-- Screen 0 apps (mapped via OEM types) -->
+    <first-screen>
+        <app type="WEATHER" />
+        <app type="GALLERY" />
+        <app type="SETTINGS" />
+        <app type="DIALER" />
+        <app type="MESSAGING" />
+        <app type="CONTACTS" />
+        <app type="CAMERA" />
+    </first-screen>
+    <second-screen>
+        <app package="com.facebook.orca" />
+        <app package="com.whatsapp" />
+        <app package="com.zhiliaoapp.musically" />
+        <app package="com.google.android.youtube" />
+        <app package="com.paypal.android.p2pmobile" />
+        <app package="com.google.android.apps.maps" />
+    </second-screen>
+</desktop>

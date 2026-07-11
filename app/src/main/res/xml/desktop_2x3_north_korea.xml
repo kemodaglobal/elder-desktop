@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<desktop>
+    <!-- Deep customization for North Korea (KP) -->
+    <first-screen>
+        <app type="DIALER" />
+        <app type="MESSAGING" />
+        <app type="CONTACTS" />
+        <app type="CAMERA" />
+        <app type="GALLERY" />
+        <app type="SETTINGS" />
+    </first-screen>
+    <second-screen>
+        <!-- Standard internal services or apps can be added here -->
+        <app package="kp.com.browser" />
+        <app package="kp.com.media_player" />
+        <app package="kp.com.calendar" />
+    </second-screen>
+</desktop>
