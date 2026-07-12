@@ -1,5 +1,6 @@
 package com.elderdesktop.ui
 
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -67,6 +68,7 @@ import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun DesktopLayout(
     onAppLaunch: (AppInfo) -> Unit,
