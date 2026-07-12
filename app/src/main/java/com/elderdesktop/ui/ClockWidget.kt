@@ -28,7 +28,8 @@ fun ClockWidget(
     weatherText: String,
     isWeatherAlert: Boolean,
     locationCity: String = "",
-    currentTemperature: String = ""
+    currentTemperature: String = "",
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
 
@@ -45,50 +46,49 @@ fun ClockWidget(
 
     val locale = LocalLocale.current.platformLocale
     val marker = getTimeOfDayMarker(locale, hour24)
-    
+
     val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
-    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = statusBarHeight + 16.dp),
-        shape = RoundedCornerShape(24.dp),
+        modifier = modifier,  // 使用传入的 modifier（fillMaxSize）
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f))
     ) {
         Row(
             modifier = Modifier
-                .padding(20.dp)
-                .fillMaxWidth(),
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column {
                 if (locationCity.isNotEmpty()) {
                     Text(
                         text = locationCity,
-                        fontSize = 18.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White.copy(alpha = 0.9f)
                     )
                 }
                 Text(
                     text = "$marker $hour12:$minute",
-                    fontSize = 38.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Text(
                     text = dateString,
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     color = Color.White
                 )
                 if (currentTemperature.isNotEmpty() || weatherText.isNotEmpty()) {
-                    val weatherDisplay = listOfNotNull(currentTemperature.ifEmpty { null }, weatherText.ifEmpty { null })
-                        .joinToString(" ")
+                    val weatherDisplay = listOfNotNull(
+                        currentTemperature.ifEmpty { null },
+                        weatherText.ifEmpty { null }
+                    ).joinToString(" ")
                     Text(
                         text = weatherDisplay,
-                        fontSize = if (isWeatherAlert) 22.sp else 18.sp,
+                        fontSize = if (isWeatherAlert) 18.sp else 14.sp,
                         fontWeight = if (isWeatherAlert) FontWeight.Bold else FontWeight.Normal,
                         color = if (isWeatherAlert) Color.Red else Color.White,
                         modifier = Modifier.padding(top = 4.dp)
@@ -97,7 +97,7 @@ fun ClockWidget(
             }
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(60.dp)
                     .clip(CircleShape)
                     .background(Color.Yellow)
             )

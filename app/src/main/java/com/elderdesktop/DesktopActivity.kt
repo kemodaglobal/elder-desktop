@@ -64,7 +64,6 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                 ) {
                     DesktopLayout(
                         onAppLaunch = { app: AppInfo -> speak(app.label) },  // 显式声明类型
-                        onSpeak = { text: String -> speak(text) },
                         weatherText = weatherText,
                         isWeatherAlert = isWeatherAlert,
                         locationCity = locationCity,
@@ -129,17 +128,17 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
         var bestLocation: android.location.Location? = null
         for (provider in providers) {
-            val location = locationManager.getLastKnownLocation(provider)
-            if (location != null &&
-                (bestLocation == null || location.accuracy < bestLocation.accuracy)
+            val loc = locationManager.getLastKnownLocation(provider)
+            if (loc != null &&
+                (bestLocation == null || loc.accuracy < bestLocation.accuracy)
             ) {
-                bestLocation = location
+                bestLocation = loc
             }
         }
 
-        val location = bestLocation
-        if (location != null) {
-            fetchWeatherForLocation(location)
+        val currentBest = bestLocation
+        if (currentBest != null) {
+            fetchWeatherForLocation(currentBest)
         } else {
             Log.w("DesktopActivity", "Could not determine last known location")
         }

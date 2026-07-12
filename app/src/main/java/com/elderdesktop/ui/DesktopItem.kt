@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,7 +34,7 @@ import com.elderdesktop.R
 import com.elderdesktop.model.AppInfo
 
 @Composable
-fun DesktopItem(app: AppInfo, itemHeight: androidx.compose.ui.unit.Dp, onClick: () -> Unit) {
+fun DesktopItem(app: AppInfo, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxSize()
@@ -74,14 +73,12 @@ fun DesktopItem(app: AppInfo, itemHeight: androidx.compose.ui.unit.Dp, onClick: 
 fun SpeedDialItem(
     index: Int,
     settings: DesktopSettings,
-    itemHeight: androidx.compose.ui.unit.Dp,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     val contact = settings.getSpeedDial(index)
     Card(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable { onClick() },
+        modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
