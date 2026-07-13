@@ -1,3 +1,4 @@
+@file:Suppress("UnstableApiUsage")
 pluginManagement {
     repositories {
         google {
@@ -25,3 +26,5 @@ dependencyResolutionManagement {
 rootProject.name = "Elder Desktop"
 include(":app")
 include(":eldercalculator")
+include(":eldercamera")
+include(":elderweather")

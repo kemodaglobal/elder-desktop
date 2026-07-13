@@ -34,11 +34,13 @@ import com.elderdesktop.R
 import com.elderdesktop.model.AppInfo
 
 @Composable
-fun DesktopItem(app: AppInfo, onClick: () -> Unit) {
+fun DesktopItem(
+    app: AppInfo,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Card(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable { onClick() },
+        modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = app.backgroundColor.copy(alpha = 0.9f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -77,10 +79,12 @@ fun SpeedDialItem(
     onClick: () -> Unit
 ) {
     val contact = settings.getSpeedDial(index)
+    val backgroundColor = if (contact == null) Color(0xFF1A5F7A) else Color(0xFF2ECC71)
+    
     Card(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor.copy(alpha = 0.9f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(

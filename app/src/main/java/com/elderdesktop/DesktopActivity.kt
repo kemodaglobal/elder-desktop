@@ -1,19 +1,26 @@
 package com.elderdesktop
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
-import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
@@ -22,7 +29,13 @@ import com.elderdesktop.model.AppInfo
 import com.elderdesktop.ui.DesktopLayout
 import com.elderdesktop.ui.theme.ElderDesktopTheme
 import com.elderdesktop.util.WeatherUtils
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
@@ -45,10 +58,69 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         }
     }
 
+    private val voiceLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data = result.data
+            val matches = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            if (!matches.isNullOrEmpty()) {
+                val command = matches[0].lowercase()
+                handleVoiceCommand(command)
+            }
+        }
+    }
+
+    private fun handleVoiceCommand(command: String) {
+        val context = this
+        when {
+            command.contains("相机") || command.contains("拍照") || command.contains("camera") -> {
+                speak("正在打开相机")
+                com.elderdesktop.util.AppUtils.launchCamera(context)
+            }
+            command.contains("设置") || command.contains("settings") -> {
+                speak("正在打开桌面设置")
+                startActivity(Intent(context, SettingsActivity::class.java))
+            }
+            command.contains("天气") || command.contains("weather") -> {
+                speak("正在打开天气")
+                startActivity(Intent(context, WeatherActivity::class.java))
+            }
+            command.contains("打电话") || command.contains("拨号") || command.contains("call") -> {
+                speak("正在打开电话")
+                val dialerIntent = Intent(Intent.ACTION_DIAL)
+                startActivity(dialerIntent)
+            }
+            else -> {
+                speak("未能识别指令: $command")
+            }
+        }
+    }
+
+    private fun startVoiceEngine() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, java.util.Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "请说出指令")
+        }
+        try {
+            voiceLauncher.launch(intent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, "您的设备不支持语音识别", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private val client = okhttp3.OkHttpClient()
 
+    @SuppressLint("SourceLockedOrientation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Lock to portrait only on small screens (phones)
+        // This avoids the Chrome OS lint warning and respects Android 17 large-screen policies
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
         
         tts = TextToSpeech(this, this)
         
@@ -63,7 +135,9 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                     color = Color.Transparent
                 ) {
                     DesktopLayout(
-                        onAppLaunch = { app: AppInfo -> speak(app.label) },  // 显式声明类型
+                        onAppLaunch = { app: AppInfo -> speak(app.label) },
+                        onSpeak = { text: String -> speak(text) },
+                        onVoiceAssistant = { startVoiceEngine() },
                         weatherText = weatherText,
                         isWeatherAlert = isWeatherAlert,
                         locationCity = locationCity,
@@ -153,11 +227,13 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                     client = client
                 )
 
-                withContext(Dispatchers.Main) {
-                    weatherText = result.description
-                    locationCity = result.cityName
-                    isWeatherAlert = result.isAlert
-                    currentTemperature = result.formattedTemp
+                if (result != null) {
+                    withContext(Dispatchers.Main) {
+                        weatherText = result.description
+                        locationCity = result.cityName
+                        isWeatherAlert = result.isAlert
+                        currentTemperature = result.formattedTemp
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("DesktopActivity", "Error updating weather", e)
@@ -172,6 +248,9 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun speak(text: String) {
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+        val settings = DesktopSettings(this)
+        if (settings.voiceAnnouncements) {
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+        }
     }
 }

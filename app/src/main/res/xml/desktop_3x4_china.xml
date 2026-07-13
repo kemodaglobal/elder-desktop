@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <desktop>
     <first-screen>
+        <app type="WEATHER" />
         <app type="GALLERY" />
         <app type="CAMERA" />
+        <app type="SETTINGS" />
+        <app type="APP_STORE" />
+        <app type="BROWSER" />
         <app type="DIALER" />
+        <app type="CONTACTS" />
         <app type="MESSAGING" />
     </first-screen>
     <second-screen>
-        <app type="CONTACTS" />
-        <app type="SETTINGS" />
         <app type="WEATHER" />
         <app package="com.tencent.mm" />
         <app package="com.ss.android.ugc.aweme" />

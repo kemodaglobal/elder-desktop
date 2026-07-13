@@ -8,6 +8,13 @@
     <string name="layout_3x4">3 x 4 布局</string>
     <string name="features">功能</string>
     <string name="voice_assistant_button">语音助手按钮</string>
+    <string name="voice_assistant_mode">语音助手模式</string>
+    <string name="voice_assistant_system">系统默认助手</string>
+    <string name="voice_assistant_engine">内置语音引擎</string>
+    <string name="voice_assistant_engine_desc">根据语音指令直接执行操作</string>
+    <string name="voice_announcements">语音播报</string>
+    <string name="basic_mode">基础模式</string>
+    <string name="basic_mode_desc">适用于无互联网用户的简单模式</string>
     <string name="peace_of_mind_lock">安心锁</string>
     <string name="change_passcode">修改密码 (当前: %1$s)</string>
     <string name="set_passcode">设置密码</string>
@@ -32,6 +39,9 @@
     <string name="manage_apps">管理应用</string>
     <string name="select_apps">选择要显示在主屏幕上的应用</string>
     <string name="apps">应用</string>
+    <string name="weather">天气</string>
+    <string name="loading">加载中…</string>
+    <string name="weather_alert">天气预警！</string>
     <string name="c">--°C</string>
     <string name="weather_clear">晴</string>
     <string name="weather_partly_cloudy">多云</string>

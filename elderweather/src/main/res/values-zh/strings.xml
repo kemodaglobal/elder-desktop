@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">长辈天气</string>
+    <string name="temperature">温度</string>
+    <string name="unit_c">°C</string>
+    <string name="unit_f">°F</string>
+    <string name="loading">加载中…</string>
+    <string name="city">城市</string>
+    <string name="description">天气状况</string>
+    <string name="weather_clear">晴朗</string>
+    <string name="weather_partly_cloudy">多云</string>
+    <string name="weather_fog">有雾</string>
+    <string name="weather_drizzle">毛毛雨</string>
+    <string name="weather_rain">下雨</string>
+    <string name="weather_snow">下雪</string>
+    <string name="weather_rain_showers">阵雨</string>
+    <string name="weather_thunderstorm">雷暴</string>
+    <string name="weather_cloudy">阴天</string>
+</resources>

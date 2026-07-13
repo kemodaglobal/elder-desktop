@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,10 @@ fun SettingsScreen() {
     
     var is2x3 by remember { mutableStateOf(settings.is2x3) }
     var showVoice by remember { mutableStateOf(settings.showVoiceAssistant) }
+    var voiceMode by remember { mutableIntStateOf(settings.voiceAssistantMode) }
+    var voiceAnnouncements by remember { mutableStateOf(settings.voiceAnnouncements) }
     var usePasscode by remember { mutableStateOf(settings.usePasscode) }
+    var isBasicMode by remember { mutableStateOf(settings.isBasicMode) }
     var passcode by remember { mutableStateOf(settings.passcode) }
     var showPasscodeDialog by remember { mutableStateOf(false) }
 
@@ -95,14 +99,51 @@ fun SettingsScreen() {
             Text(stringResource(R.string.select_apps))
         }
 
+        // Display currently selected apps for easy removal
+        val userApps = remember(allApps, selectedApps) {
+            allApps.filter { it.packageName in selectedApps }
+        }
+
+        if (userApps.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            userApps.forEach { app ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(app.label, modifier = Modifier.padding(start = 8.dp))
+                        }
+                        IconButton(onClick = {
+                            val newSelected = selectedApps.toMutableSet()
+                            newSelected.remove(app.packageName)
+                            selectedApps = newSelected
+                            settings.selectedApps = newSelected
+                        }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Remove",
+                                tint = Color(0xFFE74C3C)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // ====== 联系人管理 ======
         Text(stringResource(R.string.add_contact), style = MaterialTheme.typography.titleLarge)
         
-        val appRowsPerPage = settings.layoutRows - 1
+        val totalSpeedDials = (settings.layoutRows - 1) * settings.layoutCols
         key(speedDialUpdateTrigger) {
-            for (i in 0 until appRowsPerPage) {
+            for (i in 0 until totalSpeedDials) {
                 val contact = settings.getSpeedDial(i)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -141,7 +182,11 @@ fun SettingsScreen() {
                                     settings.clearSpeedDial(i)
                                     speedDialUpdateTrigger++
                                 }) {
-                                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = stringResource(R.string.delete),
+                                        tint = Color(0xFFE74C3C)
+                                    )
                                 }
                             }
                         }
@@ -166,6 +211,78 @@ fun SettingsScreen() {
                 onCheckedChange = {
                     showVoice = it
                     settings.showVoiceAssistant = it
+                }
+            )
+        }
+
+        if (showVoice) {
+            Column(modifier = Modifier.padding(start = 16.dp)) {
+                Text(stringResource(R.string.voice_assistant_mode), style = MaterialTheme.typography.bodyMedium)
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = voiceMode == 0,
+                        onClick = {
+                            voiceMode = 0
+                            settings.voiceAssistantMode = 0
+                        }
+                    )
+                    Text(stringResource(R.string.voice_assistant_system), modifier = Modifier.padding(start = 8.dp))
+                }
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = voiceMode == 1,
+                        onClick = {
+                            voiceMode = 1
+                            settings.voiceAssistantMode = 1
+                        }
+                    )
+                    Column(modifier = Modifier.padding(start = 8.dp)) {
+                        Text(stringResource(R.string.voice_assistant_engine))
+                        Text(
+                            text = stringResource(R.string.voice_assistant_engine_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(stringResource(R.string.voice_announcements))
+            Switch(
+                checked = voiceAnnouncements,
+                onCheckedChange = {
+                    voiceAnnouncements = it
+                    settings.voiceAnnouncements = it
+                }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(stringResource(R.string.basic_mode))
+                Text(
+                    text = stringResource(R.string.basic_mode_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = isBasicMode,
+                onCheckedChange = {
+                    isBasicMode = it
+                    settings.isBasicMode = it
                 }
             )
         }
@@ -202,9 +319,10 @@ fun SettingsScreen() {
             onClick = {
                 context.startActivity(Intent(Settings.ACTION_SETTINGS))
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67E22))
         ) {
-            Text(stringResource(R.string.system_settings))
+            Text(stringResource(R.string.system_settings), color = Color.White)
         }
     }
 

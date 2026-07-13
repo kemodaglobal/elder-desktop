@@ -1,11 +1,10 @@
-package com.elderdesktop.util
+package com.elderdesktop.weather
 
 import android.content.Context
 import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.util.Log
-import com.elderdesktop.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -118,7 +117,6 @@ object WeatherUtils {
                         )
                     }
 
-                    // 获取城市名
                     val cityName = getCityName(context, location.latitude, location.longitude)
 
                     WeatherResult(description, cityName, isAlert, formattedTemp, forecastList, code)

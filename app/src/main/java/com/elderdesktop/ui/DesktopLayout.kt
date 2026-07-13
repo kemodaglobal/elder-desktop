@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.speech.RecognizerIntent
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -50,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -57,9 +57,11 @@ import androidx.palette.graphics.Palette
 import com.elderdesktop.DesktopSettings
 import com.elderdesktop.R
 import com.elderdesktop.SettingsActivity
+import com.elderdesktop.WeatherActivity
 import com.elderdesktop.model.AppInfo
 import com.elderdesktop.model.AppType
 import com.elderdesktop.model.DesktopConfig
+import com.elderdesktop.model.DesktopXmlItem
 import com.elderdesktop.model.GridItem
 import com.elderdesktop.util.AppUtils
 import kotlinx.coroutines.Dispatchers
@@ -72,6 +74,8 @@ import java.util.Locale
 @Composable
 fun DesktopLayout(
     onAppLaunch: (AppInfo) -> Unit,
+    onSpeak: (String) -> Unit,
+    onVoiceAssistant: () -> Unit,
     weatherText: String,
     isWeatherAlert: Boolean,
     locationCity: String = "",
@@ -86,12 +90,20 @@ fun DesktopLayout(
     var settingsVersion by remember { mutableIntStateOf(0) }
     val settings = remember(settingsVersion) { DesktopSettings(context) }
 
-    val config = remember {
+    val config = remember(settings.is2x3) {
         val currentCountry = Locale.getDefault().country
-        val xmlId = when (currentCountry) {
-            "CN" -> R.xml.desktop_2x3_china
-            "KP" -> R.xml.desktop_2x3_north_korea
-            else -> R.xml.desktop_2x3_global
+        val xmlId = if (settings.is2x3) {
+            when (currentCountry) {
+                "CN" -> R.xml.desktop_2x3_china
+                "KP" -> R.xml.desktop_2x3_north_korea
+                else -> R.xml.desktop_2x3_global
+            }
+        } else {
+            when (currentCountry) {
+                "CN" -> R.xml.desktop_3x4_china
+                "KP" -> R.xml.desktop_3x4_north_korea
+                else -> R.xml.desktop_3x4_global
+            }
         }
         parseDesktopConfig(context, xmlId)
     }
@@ -119,8 +131,40 @@ fun DesktopLayout(
 
     LaunchedEffect(settingsVersion) {
         val fetchedApps = withContext(Dispatchers.IO) {
-            val apps = AppUtils.getLaunchableApps(context)
-            apps.map { app ->
+            val allLaunchable = AppUtils.getLaunchableApps(context)
+            
+            // Determine which apps we actually need to display
+            val firstScreenMap = AppUtils.getFirstScreenPackageMap()
+            val neededPackageNames = mutableSetOf<String>()
+
+            if (settings.isBasicMode) {
+                // In Basic Mode, only provide Gallery, Camera, Dialer, Contacts, and Settings
+                listOf(
+                    AppType.GALLERY, AppType.CAMERA, AppType.DIALER, AppType.CONTACTS, AppType.SETTINGS
+                ).forEach { type ->
+                    neededPackageNames.addAll(firstScreenMap[type] ?: emptyList())
+                }
+            } else {
+                // XML first screen
+                config.firstScreen.forEach { item ->
+                    when(item) {
+                        is DesktopXmlItem.Type -> neededPackageNames.addAll(firstScreenMap[item.type] ?: emptyList())
+                        is DesktopXmlItem.Package -> neededPackageNames.add(item.packageName)
+                    }
+                }
+                // XML second screen
+                config.secondScreen.forEach { item ->
+                    when(item) {
+                        is DesktopXmlItem.Type -> neededPackageNames.addAll(firstScreenMap[item.type] ?: emptyList())
+                        is DesktopXmlItem.Package -> neededPackageNames.add(item.packageName)
+                    }
+                }
+                // User selected
+                neededPackageNames.addAll(settings.selectedApps)
+            }
+
+            // Filter and process only needed apps
+            allLaunchable.filter { it.packageName in neededPackageNames || (neededPackageNames.isEmpty() && !settings.isBasicMode) }.map { app ->
                 val bitmap = app.icon.toBitmap()
                 val palette = Palette.from(bitmap).generate()
                 val dominantColor = palette.getDominantColor(Color(0xFF1A5F7A).toArgb())
@@ -137,61 +181,73 @@ fun DesktopLayout(
         }
     } else {
         val firstScreenMap = AppUtils.getFirstScreenPackageMap()
-
-        // 1. Core Apps for Page 0
-        val coreTypes = listOf(AppType.GALLERY, AppType.CAMERA, AppType.DIALER, AppType.MESSAGING)
-        val coreApps = mutableListOf<AppInfo>()
         val usedPackageNames = mutableSetOf<String>()
 
-        for (type in coreTypes) {
-            val possiblePackages = firstScreenMap[type] ?: emptyList()
-            val foundApp = allApps.find { it.packageName in possiblePackages && it.packageName !in usedPackageNames }
-            if (foundApp != null) {
-                coreApps.add(foundApp)
-                usedPackageNames.add(foundApp.packageName)
+        fun resolveXmlItems(items: List<DesktopXmlItem>): List<AppInfo> {
+            val resolved = mutableListOf<AppInfo>()
+            for (item in items) {
+                when (item) {
+                    is DesktopXmlItem.Type -> {
+                        val possiblePackages = firstScreenMap[item.type] ?: emptyList()
+                        val foundApp = allApps.find { it.packageName in possiblePackages && it.packageName !in usedPackageNames }
+                        if (foundApp != null) {
+                            resolved.add(foundApp)
+                            usedPackageNames.add(foundApp.packageName)
+                        }
+                    }
+                    is DesktopXmlItem.Package -> {
+                        val foundApp = allApps.find { it.packageName == item.packageName && it.packageName !in usedPackageNames }
+                        if (foundApp != null) {
+                            resolved.add(foundApp)
+                            usedPackageNames.add(foundApp.packageName)
+                        }
+                    }
+                }
             }
+            return resolved
         }
 
-        // 2. First screen apps
-        val firstScreenApps = mutableListOf<AppInfo>()
-        for (type in config.firstScreenTypes) {
-            if (type in coreTypes) continue
-            val possiblePackages = firstScreenMap[type] ?: emptyList()
-            val foundApp = allApps.find { it.packageName in possiblePackages && it.packageName !in usedPackageNames }
-            if (foundApp != null) {
-                firstScreenApps.add(foundApp)
-                usedPackageNames.add(foundApp.packageName)
-            }
-        }
+        // 1. Identify Apps from XML "first-screen"
+        val firstScreenFoundApps = resolveXmlItems(config.firstScreen)
 
-        // 3. Second screen apps
-        val secondScreenApps = allApps.filter {
-            it.packageName in config.secondScreenPackages && it.packageName !in usedPackageNames
-        }
-        secondScreenApps.forEach { usedPackageNames.add(it.packageName) }
+        // 2. Identify Second screen apps (Region specific via XML packages/types)
+        val secondScreenApps = resolveXmlItems(config.secondScreen)
 
-        // 4. Remaining apps
-        val remainingApps = allApps.filter { it.packageName !in usedPackageNames }
+        // 3. User selected apps
+        val userSelectedApps = allApps.filter { it.packageName in settings.selectedApps && it.packageName !in usedPackageNames }
 
         // Construct Pages
         val finalPages = mutableListOf<List<GridItem>>()
 
-        // PAGE 0: Contact Shortcuts (6 slots) - 现在是首页
-		val page0SpeedDials = (0 until 6).map { GridItem.SpeedDial(it) }
-		finalPages.add(page0SpeedDials)
+        val rowCount = settings.layoutRows - 1
+        val colCount = settings.layoutCols
 
-        // PAGE 1: Core Apps (4 apps) - 现在是第二页
-		finalPages.add(coreApps.take(4).map { GridItem.App(it) })
+        // PAGE 0: Contact Shortcuts
+        val totalSpeedDials = rowCount * colCount
+        val page0SpeedDials = (0 until totalSpeedDials).map { GridItem.SpeedDial(it) }
+        finalPages.add(page0SpeedDials)
 
-        // PAGE 2+: Everything else
-        val pageSize = 6
-        val everythingElse = mutableListOf<GridItem>()
-        everythingElse.addAll(firstScreenApps.map { GridItem.App(it) })
-        everythingElse.addAll(secondScreenApps.map { GridItem.App(it) })
-        everythingElse.addAll(remainingApps.map { GridItem.App(it) })
+        // PAGE 1: First Screen Apps from XML
+        val appsOnFirstPage = (rowCount - 1) * colCount
+        val firstPageList = if (settings.isBasicMode) {
+            // In basic mode, prioritize the core apps on page 1
+            firstScreenFoundApps.take(appsOnFirstPage)
+        } else {
+            firstScreenFoundApps.take(appsOnFirstPage)
+        }
+        finalPages.add(firstPageList.map { GridItem.App(it) })
 
-        if (everythingElse.isNotEmpty()) {
-            finalPages.addAll(everythingElse.chunked(pageSize))
+        // PAGE 2+: Designated apps (leftover first-screen, second-screen, and user-selected)
+        val pageSize = rowCount * colCount
+        val designatedApps = mutableListOf<GridItem>()
+        if (firstScreenFoundApps.size > appsOnFirstPage) {
+            designatedApps.addAll(firstScreenFoundApps.drop(appsOnFirstPage).map { GridItem.App(it) })
+        }
+        designatedApps.addAll(secondScreenApps.map { GridItem.App(it) })
+        designatedApps.addAll(userSelectedApps.map { GridItem.App(it) })
+
+        if (designatedApps.isNotEmpty()) {
+            finalPages.addAll(designatedApps.chunked(pageSize))
         }
 
         val pagerState = rememberPagerState(
@@ -201,9 +257,9 @@ fun DesktopLayout(
         val coroutineScope = rememberCoroutineScope()
 
         BackHandler {
-            if (pagerState.currentPage > 0) {
+            if (pagerState.currentPage != 1) {
                 coroutineScope.launch {
-                    pagerState.animateScrollToPage(0)
+                    pagerState.animateScrollToPage(1)
                 }
             }
         }
@@ -219,62 +275,111 @@ fun DesktopLayout(
                     modifier = Modifier.weight(1f)
                 ) { pageIndex ->
                     val pageItems = finalPages[pageIndex]
-                    val rowCount = 3
-                    val colCount = 2
 
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.Top  // ★ 改为 Top
+                        verticalArrangement = Arrangement.Top
                     ) {
                         for (rowIndex in 0 until rowCount) {
                             Row(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(bottom = if (rowIndex < rowCount - 1) 16.dp else 0.dp),  // ★ 手动间距
+                                    .padding(bottom = if (rowIndex < rowCount - 1) 16.dp else 0.dp),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 if (pageIndex == 1 && rowIndex == 0) {
-                                    // ClockWidget
-                                    ClockWidget(
-                                        weatherText = weatherText,
-                                        isWeatherAlert = isWeatherAlert,
-                                        locationCity = locationCity,
-                                        currentTemperature = currentTemperature,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                    )
+                                    // Integrated Widget on Page 1
+                                    if (!settings.isBasicMode) {
+                                        ClockWidget(
+                                            weatherText = weatherText,
+                                            isWeatherAlert = isWeatherAlert,
+                                            locationCity = locationCity,
+                                            currentTemperature = currentTemperature,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .fillMaxHeight(),
+                                            onClick = {
+                                                val intent = Intent(context, WeatherActivity::class.java)
+                                                context.startActivity(intent)
+                                            }
+                                        )
+                                    } else {
+                                        // In Basic Mode, show simplified clock without weather
+                                        SimpleClockWidget(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .fillMaxHeight()
+                                        )
+                                    }
                                 } else {
                                     for (colIndex in 0 until colCount) {
-                                        val itemIndex = calculateItemIndex(pageIndex, rowIndex, colIndex)
+                                        val itemIndex = calculateItemIndex(pageIndex, rowIndex, colIndex, colCount)
 
                                         if (itemIndex >= 0 && itemIndex < pageItems.size) {
                                             val item = pageItems[itemIndex]
                                             Box(
                                                 modifier = Modifier
                                                     .weight(1f)
-                                                    .fillMaxSize()  // ★ 确保占满
+                                                    .fillMaxSize()
                                             ) {
                                                 when (item) {
                                                     is GridItem.App -> {
                                                         DesktopItem(
-                                                            item.info
-                                                            // ★ DesktopItem 填满
+                                                            app = item.info,
+                                                            modifier = Modifier.fillMaxSize()
                                                         ) {
-                                                            Log.d("DesktopLayout", "Clicked: ${item.info.label}")
-                                                            // ... 原有点击逻辑
+                                                            val isSettingsApp = firstScreenMap[AppType.SETTINGS]?.contains(item.info.packageName) == true
+                                                            val isCameraApp = firstScreenMap[AppType.CAMERA]?.contains(item.info.packageName) == true
+
+                                                            if (isSettingsApp) {
+                                                                if (settings.usePasscode) {
+                                                                    pendingApp = item.info
+                                                                    showUnlockDialog = true
+                                                                } else {
+                                                                    onAppLaunch(item.info)
+                                                                    context.startActivity(Intent(context, SettingsActivity::class.java))
+                                                                }
+                                                            } else if (item.info.packageName == context.packageName && firstScreenMap[AppType.WEATHER]?.contains(item.info.packageName) == true) {
+                                                                onAppLaunch(item.info)
+                                                                context.startActivity(Intent(context, WeatherActivity::class.java))
+                                                            } else if (isCameraApp) {
+                                                                onAppLaunch(item.info)
+                                                                AppUtils.launchCamera(context)
+                                                            } else {
+                                                                onAppLaunch(item.info)
+                                                                AppUtils.launchApp(context, item.info)
+                                                            }
                                                         }
                                                     }
                                                     is GridItem.SpeedDial -> {
                                                         SpeedDialItem(
-                                                            item.index,
-                                                            settings,
-                                                            modifier = Modifier.fillMaxSize()  // ★ SpeedDialItem 填满
+                                                            index = item.index,
+                                                            settings = settings,
+                                                            modifier = Modifier.fillMaxSize()
                                                         ) {
-                                                            Log.d("DesktopLayout", "Clicked SpeedDial: ${item.index}")
-                                                            // ... 原有点击逻辑
+                                                            val contact = settings.getSpeedDial(item.index)
+                                                            if (contact == null) {
+                                                                if (settings.usePasscode) {
+                                                                    pendingSpeedDialIndex = item.index
+                                                                    showUnlockDialog = true
+                                                                } else {
+                                                                    editingSpeedDialIndex = item.index
+                                                                    showAddContactDialog = true
+                                                                }
+                                                            } else {
+                                                                val name = contact.first
+                                                                val number = contact.second
+                                                                onSpeak(name)
+                                                                val intent = Intent(Intent.ACTION_CALL, "tel:$number".toUri())
+                                                                try {
+                                                                    context.startActivity(intent)
+                                                                } catch (_: Exception) {
+                                                                    val dialIntent = Intent(Intent.ACTION_DIAL, "tel:$number".toUri())
+                                                                    context.startActivity(dialIntent)
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -310,36 +415,35 @@ fun DesktopLayout(
                 }
             }
 
-            // Voice Assistant Button
-            // Voice Assistant Button
             if (settings.showVoiceAssistant) {
                 FloatingActionButton(
                     onClick = {
-                        try {
-                            // 方式1: 使用系统语音搜索 Intent
-                            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                                putExtra(RecognizerIntent.EXTRA_PROMPT, "请说话")
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            context.startActivity(intent)
-                        } catch (_: ActivityNotFoundException) {
+                        if (settings.voiceAssistantMode == 1) {
+                            onVoiceAssistant()
+                        } else {
                             try {
-                                // 方式2: 使用系统语音命令 Intent
-                                val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
+                                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                    putExtra(RecognizerIntent.EXTRA_PROMPT, "请说话")
                                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 }
                                 context.startActivity(intent)
-                            } catch (_: Exception) {
+                            } catch (_: ActivityNotFoundException) {
                                 try {
-                                    // 方式3: 使用 Google 语音搜索
-                                    val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
-                                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                    val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
                                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                     }
                                     context.startActivity(intent)
                                 } catch (_: Exception) {
-                                    Toast.makeText(context, "无法启动语音助手", Toast.LENGTH_SHORT).show()
+                                    try {
+                                        val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
+                                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        }
+                                        context.startActivity(intent)
+                                    } catch (_: Exception) {
+                                        Toast.makeText(context, "无法启动语音助手", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
                         }
@@ -350,7 +454,7 @@ fun DesktopLayout(
                             bottom = navBarHeight + 16.dp,
                             end = 16.dp
                         ),
-                    containerColor = Color.White.copy(alpha = 0.7f),
+                    containerColor = Color(0xFFFFD700), // High-visibility Gold/Yellow
                     contentColor = Color.Black
                 ) {
                     Icon(Icons.Default.Mic, contentDescription = stringResource(R.string.voice_assistant))
@@ -393,28 +497,17 @@ fun DesktopLayout(
     }
 }
 
-// 辅助函数：计算实际 item 索引
-private fun calculateItemIndex(pageIndex: Int, rowIndex: Int, colIndex: Int): Int {
+private fun calculateItemIndex(pageIndex: Int, rowIndex: Int, colIndex: Int, colCount: Int): Int {
     return when (pageIndex) {
-        0 -> {
-            // Page 0: 速拨页，3行，正常计算
-            rowIndex * 2 + colIndex
-        }
-        1 -> {
-            // Page 1: 核心应用页，第0行被 ClockWidget 占用
-            // 第1行(col0=0, col1=1)，第2行(col0=2, col1=3)
-            (rowIndex - 1) * 2 + colIndex
-        }
-        else -> {
-            // 其他页：正常计算
-            rowIndex * 2 + colIndex
-        }
+        0 -> rowIndex * colCount + colIndex
+        1 -> (rowIndex - 1) * colCount + colIndex
+        else -> rowIndex * colCount + colIndex
     }
 }
 
 private fun parseDesktopConfig(context: Context, xmlId: Int): DesktopConfig {
-    val firstScreen = mutableListOf<AppType>()
-    val secondScreen = mutableListOf<String>()
+    val firstScreen = mutableListOf<DesktopXmlItem>()
+    val secondScreen = mutableListOf<DesktopXmlItem>()
     try {
         val parser = context.resources.getXml(xmlId)
         var eventType = parser.eventType
@@ -424,14 +517,17 @@ private fun parseDesktopConfig(context: Context, xmlId: Int): DesktopConfig {
                 when (parser.name) {
                     "first-screen", "second-screen" -> currentTag = parser.name
                     "app" -> {
-                        if (currentTag == "first-screen") {
-                            val typeStr = parser.getAttributeValue(null, "type")
-                            if (typeStr != null) {
-                                try { firstScreen.add(AppType.valueOf(typeStr)) } catch (_: Exception) {}
-                            }
-                        } else if (currentTag == "second-screen") {
-                            val pkg = parser.getAttributeValue(null, "package")
-                            if (pkg != null) secondScreen.add(pkg)
+                        val typeStr = parser.getAttributeValue(null, "type")
+                        val pkg = parser.getAttributeValue(null, "package")
+                        val item = if (typeStr != null) {
+                            try { DesktopXmlItem.Type(AppType.valueOf(typeStr)) } catch (_: Exception) { null }
+                        } else if (pkg != null) {
+                            DesktopXmlItem.Package(pkg)
+                        } else null
+
+                        if (item != null) {
+                            if (currentTag == "first-screen") firstScreen.add(item)
+                            else if (currentTag == "second-screen") secondScreen.add(item)
                         }
                     }
                 }

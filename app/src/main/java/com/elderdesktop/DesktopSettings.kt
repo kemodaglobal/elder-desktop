@@ -19,9 +19,21 @@ class DesktopSettings(context: Context) {
         get() = prefs.getBoolean("show_voice_assistant", false)
         set(value) = prefs.edit { putBoolean("show_voice_assistant", value) }
 
+    var voiceAssistantMode: Int
+        get() = prefs.getInt("voice_assistant_mode", 0) // 0: System, 1: Engine
+        set(value) = prefs.edit { putInt("voice_assistant_mode", value) }
+
+    var voiceAnnouncements: Boolean
+        get() = prefs.getBoolean("voice_announcements", true)
+        set(value) = prefs.edit { putBoolean("voice_announcements", value) }
+
     var usePasscode: Boolean
         get() = prefs.getBoolean("use_passcode", false)
         set(value) = prefs.edit { putBoolean("use_passcode", value) }
+
+    var isBasicMode: Boolean
+        get() = prefs.getBoolean("is_basic_mode", false)
+        set(value) = prefs.edit { putBoolean("is_basic_mode", value) }
 
     var passcode: String
         get() = prefs.getString("passcode", "") ?: ""

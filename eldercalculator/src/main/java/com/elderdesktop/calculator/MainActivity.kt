@@ -1,5 +1,7 @@
 package com.elderdesktop.calculator
 
+import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -16,8 +18,14 @@ class MainActivity : AppCompatActivity() {
     private var stateError: Boolean = false
     private var lastDot: Boolean = false
 
+    @SuppressLint("SourceLockedOrientation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         
@@ -103,12 +111,13 @@ class MainActivity : AppCompatActivity() {
         lastDot = newText.contains(".")
     }
 
+    @SuppressLint("SetTextI18n")
     fun onPercent() {
         if (lastNumeric && !stateError) {
             try {
                 val value = display.text.toString().toDouble() / 100
                 display.text = value.toString()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 display.text = "Error"
                 stateError = true
                 lastNumeric = false
@@ -116,6 +125,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     fun onEqual() {
         if (lastNumeric && !stateError) {
             val text = display.text.toString()
@@ -123,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                 val result = evaluate(text)
                 display.text = result.toString()
                 lastDot = display.text.contains(".")
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 display.text = "Error"
                 stateError = true
                 lastNumeric = false
@@ -157,7 +167,7 @@ class MainActivity : AppCompatActivity() {
                 "/" -> v1 / v2
                 else -> 0.0
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             0.0
         }
     }

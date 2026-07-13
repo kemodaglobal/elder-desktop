@@ -8,6 +8,13 @@
     <string name="layout_3x4">3 x 4 Layout</string>
     <string name="features">Features</string>
     <string name="voice_assistant_button">Voice Assistant Button</string>
+    <string name="voice_assistant_mode">Voice Assistant Mode</string>
+    <string name="voice_assistant_system">System Assistant</string>
+    <string name="voice_assistant_engine">Built-in Voice Engine</string>
+    <string name="voice_assistant_engine_desc">Execute actions directly based on input</string>
+    <string name="voice_announcements">Voice Announcements</string>
+    <string name="basic_mode">Basic Mode</string>
+    <string name="basic_mode_desc">Simple mode for users without internet</string>
     <string name="peace_of_mind_lock">Peace of Mind Lock</string>
     <string name="change_passcode">Change Passcode (Current: %1$s)</string>
     <string name="set_passcode">Set Passcode</string>
@@ -32,6 +39,9 @@
     <string name="manage_apps">Manage Apps</string>
     <string name="select_apps">Select apps to display on home screen</string>
     <string name="apps">Apps</string>
+    <string name="weather">Weather</string>
+    <string name="loading">Loading…</string>
+    <string name="weather_alert">Weather Alert!</string>
     <string name="c">--°C</string>
     <string name="weather_clear">Clear sky</string>
     <string name="weather_partly_cloudy">Partly cloudy</string>

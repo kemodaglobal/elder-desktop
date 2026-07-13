@@ -8,6 +8,13 @@
     <string name="layout_3x4">3 x 4 レイアウト</string>
     <string name="features">機能</string>
     <string name="voice_assistant_button">音声アシスタントボタン</string>
+    <string name="voice_assistant_mode">音声アシスタントモード</string>
+    <string name="voice_assistant_system">システムアシスタント</string>
+    <string name="voice_assistant_engine">内蔵音声エンジン</string>
+    <string name="voice_assistant_engine_desc">入力に基づいて直接アクションを実行する</string>
+    <string name="voice_announcements">音声読み上げ</string>
+    <string name="basic_mode">基本モード</string>
+    <string name="basic_mode_desc">インターネットを利用しないユーザー向けのシンプルモード</string>
     <string name="peace_of_mind_lock">安心ロック</string>
     <string name="change_passcode">パスコードの変更 (現在: %1$s)</string>
     <string name="set_passcode">パスコードを設定</string>
@@ -32,6 +39,9 @@
     <string name="manage_apps">アプリの管理</string>
     <string name="select_apps">ホーム画面に表示するアプリを選択</string>
     <string name="apps">アプリ</string>
+    <string name="weather">天気</string>
+    <string name="loading">読み込み中…</string>
+    <string name="weather_alert">気象警報！</string>
     <string name="c">--°C</string>
     <string name="weather_clear">快晴</string>
     <string name="weather_partly_cloudy">時々曇り</string>

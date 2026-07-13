@@ -3,7 +3,6 @@ package com.elderdesktop.util
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.provider.MediaStore
 import com.elderdesktop.model.AppInfo
 import com.elderdesktop.model.AppType
@@ -49,6 +48,7 @@ object AppUtils {
     }
 
     fun getFirstScreenPackageMap(): Map<AppType, List<String>> = mapOf(
+        AppType.WEATHER to listOf("com.elderdesktop"),
         AppType.GALLERY to listOf(
             "com.miui.gallery", "com.oplus.gallery", "com.google.android.apps.photos",
             "com.sec.android.gallery3d", "com.huawei.photos", "com.android.gallery3d"
@@ -65,6 +65,18 @@ object AppUtils {
         AppType.CAMERA to listOf(
             "com.android.camera", "com.miui.camera", "com.google.android.GoogleCamera",
             "com.sec.android.app.camera", "com.huawei.camera"
+        ),
+        AppType.CONTACTS to listOf(
+            "com.android.contacts", "com.google.android.contacts",
+            "com.samsung.android.app.contacts", "com.huawei.contacts"
+        ),
+        AppType.BROWSER to listOf(
+            "com.android.chrome", "com.android.browser", "org.mozilla.firefox",
+            "com.sec.android.app.sbrowser", "com.huawei.browser", "com.mias.browser"
+        ),
+        AppType.APP_STORE to listOf(
+            "com.android.vending", "com.xiaomi.market", "com.huawei.appmarket",
+            "com.oppo.market", "com.bbk.appstore", "com.sec.android.app.samsungapps"
         )
     )
 }

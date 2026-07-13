@@ -2,13 +2,25 @@ package com.elderdesktop.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,7 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
 @SuppressLint("DefaultLocale")
@@ -29,7 +42,8 @@ fun ClockWidget(
     isWeatherAlert: Boolean,
     locationCity: String = "",
     currentTemperature: String = "",
-    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
 
@@ -50,7 +64,7 @@ fun ClockWidget(
     val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
 
     Card(
-        modifier = modifier,  // 使用传入的 modifier（fillMaxSize）
+        modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f))
     ) {
@@ -100,6 +114,56 @@ fun ClockWidget(
                     .size(60.dp)
                     .clip(CircleShape)
                     .background(Color.Yellow)
+            )
+        }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+@Composable
+fun SimpleClockWidget(
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
+) {
+    var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            currentTime = Calendar.getInstance()
+            delay(1000.milliseconds)
+        }
+    }
+
+    val hour24 = currentTime.get(Calendar.HOUR_OF_DAY)
+    val hour12 = currentTime.get(Calendar.HOUR).let { if (it == 0) 12 else it }
+    val minute = String.format("%02d", currentTime.get(Calendar.MINUTE))
+
+    val locale = LocalLocale.current.platformLocale
+    val marker = getTimeOfDayMarker(locale, hour24)
+
+    val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
+
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "$marker $hour12:$minute",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(
+                text = dateString,
+                fontSize = 18.sp,
+                color = Color.White
             )
         }
     }

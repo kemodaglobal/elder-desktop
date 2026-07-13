@@ -8,6 +8,13 @@
     <string name="layout_3x4">3 x 4 Layout</string>
     <string name="features">Funktionen</string>
     <string name="voice_assistant_button">Sprachassistent-Button</string>
+    <string name="voice_assistant_mode">Sprachassistent-Modus</string>
+    <string name="voice_assistant_system">System-Assistent</string>
+    <string name="voice_assistant_engine">Integrierte Sprach-Engine</string>
+    <string name="voice_assistant_engine_desc">Aktionen direkt basierend auf Eingabe ausführen</string>
+    <string name="voice_announcements">Sprachansagen</string>
+    <string name="basic_mode">Einfacher Modus</string>
+    <string name="basic_mode_desc">Einfacher Modus für Benutzer ohne Internet</string>
     <string name="peace_of_mind_lock">Sicherheitssperre</string>
     <string name="change_passcode">Passcode ändern (Aktuell: %1$s)</string>
     <string name="set_passcode">Passcode festlegen</string>
@@ -32,6 +39,9 @@
     <string name="manage_apps">Apps verwalten</string>
     <string name="select_apps">Apps für den Startbildschirm auswählen</string>
     <string name="apps">Apps</string>
+    <string name="weather">Wetter</string>
+    <string name="loading">Laden…</string>
+    <string name="weather_alert">Wetterwarnung!</string>
     <string name="c">--°C</string>
     <string name="weather_clear">Klar</string>
     <string name="weather_partly_cloudy">Teilweise bewölkt</string>

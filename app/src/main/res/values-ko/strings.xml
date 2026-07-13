@@ -8,6 +8,13 @@
     <string name="layout_3x4">3 x 4 레이아웃</string>
     <string name="features">기능</string>
     <string name="voice_assistant_button">음성 비서 버튼</string>
+    <string name="voice_assistant_mode">음성 비서 모드</string>
+    <string name="voice_assistant_system">시스템 비서</string>
+    <string name="voice_assistant_engine">내장 음성 엔진</string>
+    <string name="voice_assistant_engine_desc">입력에 따라 즉시 동작 실행</string>
+    <string name="voice_announcements">음성 안내</string>
+    <string name="basic_mode">기본 모드</string>
+    <string name="basic_mode_desc">인터넷이 없는 사용자를 위한 심플 모드</string>
     <string name="peace_of_mind_lock">안심 잠금</string>
     <string name="change_passcode">비밀번호 변경 (현재: %1$s)</string>
     <string name="set_passcode">비밀번호 설정</string>
@@ -32,6 +39,9 @@
     <string name="manage_apps">앱 관리</string>
     <string name="select_apps">홈 화면에 표시할 앱 선택</string>
     <string name="apps">앱</string>
+    <string name="weather">날씨</string>
+    <string name="loading">로딩 중…</string>
+    <string name="weather_alert">기상 특보!</string>
     <string name="c">--°C</string>
     <string name="weather_clear">맑음</string>
     <string name="weather_partly_cloudy">구름 조금</string>

@@ -12,7 +12,7 @@ data class AppInfo(
 )
 
 enum class AppType {
-    WEATHER, GALLERY, SETTINGS, DIALER, MESSAGING, CONTACTS, CAMERA
+    WEATHER, GALLERY, SETTINGS, DIALER, MESSAGING, CONTACTS, CAMERA, BROWSER, APP_STORE
 }
 
 sealed class GridItem {
@@ -21,6 +21,11 @@ sealed class GridItem {
 }
 
 data class DesktopConfig(
-    val firstScreenTypes: List<AppType> = emptyList(),
-    val secondScreenPackages: List<String> = emptyList()
+    val firstScreen: List<DesktopXmlItem> = emptyList(),
+    val secondScreen: List<DesktopXmlItem> = emptyList()
 )
+
+sealed class DesktopXmlItem {
+    data class Type(val type: AppType) : DesktopXmlItem()
+    data class Package(val packageName: String) : DesktopXmlItem()
+}
