@@ -75,7 +75,23 @@ object WeatherUtils {
 
                 val request = Request.Builder().url(url).build()
                 val response = client.newCall(request).execute()
+                
+                if (!response.isSuccessful) {
+                    when (response.code) {
+                        401, 403 -> Log.e("WeatherUtils", "Connection refused: ${response.code}")
+                        404 -> Log.e("WeatherUtils", "Weather data not found: 404")
+                        429 -> Log.e("WeatherUtils", "Too many requests: 429")
+                        500, 502 -> Log.e("WeatherUtils", "Server error: ${response.code}")
+                        else -> Log.e("WeatherUtils", "Unexpected error: ${response.code}")
+                    }
+                    return@withContext null
+                }
+
                 val body = response.body.string()
+                if (body.isEmpty()) {
+                    Log.e("WeatherUtils", "Empty response body")
+                    return@withContext null
+                }
 
                 run {
                     val json = JSONObject(body)
@@ -123,10 +139,68 @@ object WeatherUtils {
 
                     WeatherResult(description, cityName, isAlert, formattedTemp, forecastList, code)
                 }
+            } catch (e: java.net.SocketTimeoutException) {
+                Log.e("WeatherUtils", "Connection timeout", e)
+                null
+            } catch (e: java.io.IOException) {
+                Log.e("WeatherUtils", "Network error", e)
+                null
             } catch (e: Exception) {
                 Log.e("WeatherUtils", "Error fetching weather", e)
                 null
             }
+        }
+    }
+
+    suspend fun fetchWeatherForCity(
+        cityName: String,
+        context: Context,
+        client: OkHttpClient
+    ): WeatherResult? {
+        val location = getLocationFromCityName(context, cityName)
+        return if (location != null) {
+            fetchWeather(location, context, client)
+        } else {
+            null
+        }
+    }
+
+    private suspend fun getLocationFromCityName(
+        context: Context,
+        cityName: String
+    ): Location? = suspendCancellableCoroutine { continuation ->
+        try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                geocoder.getFromLocationName(cityName, 1) { addresses ->
+                    if (addresses.isNotEmpty()) {
+                        val address = addresses[0]
+                        val location = Location("").apply {
+                            latitude = address.latitude
+                            longitude = address.longitude
+                        }
+                        continuation.resume(location)
+                    } else {
+                        continuation.resume(null)
+                    }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocationName(cityName, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    val address = addresses[0]
+                    val location = Location("").apply {
+                        latitude = address.latitude
+                        longitude = address.longitude
+                    }
+                    continuation.resume(location)
+                } else {
+                    continuation.resume(null)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WeatherUtils", "Error geocoding city name", e)
+            continuation.resume(null)
         }
     }
 

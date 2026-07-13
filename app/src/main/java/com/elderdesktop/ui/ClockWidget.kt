@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,10 +29,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.elderdesktop.R
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -43,7 +50,8 @@ fun ClockWidget(
     locationCity: String = "",
     currentTemperature: String = "",
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onAddLocation: () -> Unit = {}
 ) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
 
@@ -58,8 +66,9 @@ fun ClockWidget(
     val hour12 = currentTime.get(Calendar.HOUR).let { if (it == 0) 12 else it }
     val minute = String.format("%02d", currentTime.get(Calendar.MINUTE))
 
+    val context = LocalContext.current
     val locale = LocalLocale.current.platformLocale
-    val marker = getTimeOfDayMarker(locale, hour24)
+    val marker = getTimeOfDayMarker(context, locale, hour24)
 
     val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
 
@@ -68,53 +77,70 @@ fun ClockWidget(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                if (locationCity.isNotEmpty()) {
-                    Text(
-                        text = locationCity,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-                }
-                Text(
-                    text = "$marker $hour12:$minute",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = dateString,
-                    fontSize = 12.sp,
-                    color = Color.White
-                )
-                if (currentTemperature.isNotEmpty() || weatherText.isNotEmpty()) {
-                    val weatherDisplay = listOfNotNull(
-                        currentTemperature.ifEmpty { null },
-                        weatherText.ifEmpty { null }
-                    ).joinToString(" ")
-                    Text(
-                        text = weatherDisplay,
-                        fontSize = if (isWeatherAlert) 18.sp else 14.sp,
-                        fontWeight = if (isWeatherAlert) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isWeatherAlert) Color.Red else Color.White,
-                        modifier = Modifier.padding(top = 4.dp)
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (weatherText.isEmpty() && currentTemperature.isEmpty()) {
+                IconButton(
+                    onClick = onAddLocation,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.add_location),
+                        tint = Color.White
                     )
                 }
             }
-            Box(
+
+            Row(
                 modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(Color.Yellow)
-            )
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    if (locationCity.isNotEmpty()) {
+                        Text(
+                            text = locationCity,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                    Text(
+                        text = "$marker $hour12:$minute",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = dateString,
+                        fontSize = 12.sp,
+                        color = Color.White
+                    )
+                    if (currentTemperature.isNotEmpty() || weatherText.isNotEmpty()) {
+                        val weatherDisplay = listOfNotNull(
+                            currentTemperature.ifEmpty { null },
+                            weatherText.ifEmpty { null }
+                        ).joinToString(" ")
+                        Text(
+                            text = weatherDisplay,
+                            fontSize = if (isWeatherAlert) 18.sp else 14.sp,
+                            fontWeight = if (isWeatherAlert) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isWeatherAlert) Color.Red else Color.White,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(Color.Yellow)
+                )
+            }
         }
     }
 }
@@ -137,8 +163,9 @@ fun SimpleClockWidget(
     val hour12 = currentTime.get(Calendar.HOUR).let { if (it == 0) 12 else it }
     val minute = String.format("%02d", currentTime.get(Calendar.MINUTE))
 
+    val context = LocalContext.current
     val locale = LocalLocale.current.platformLocale
-    val marker = getTimeOfDayMarker(locale, hour24)
+    val marker = getTimeOfDayMarker(context, locale, hour24)
 
     val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
 
@@ -169,15 +196,15 @@ fun SimpleClockWidget(
     }
 }
 
-private fun getTimeOfDayMarker(locale: Locale, hour: Int): String {
+private fun getTimeOfDayMarker(context: android.content.Context, locale: Locale, hour: Int): String {
     return if (locale.language == "zh") {
         when (hour) {
-            in 0..1 -> "半夜"
-            in 2..5 -> "凌晨"
-            in 6..11 -> "上午"
-            in 12..13 -> "中午"
-            in 14..17 -> "下午"
-            else -> "晚上"
+            in 0..1 -> context.getString(R.string.time_midnight)
+            in 2..5 -> context.getString(R.string.time_dawn)
+            in 6..11 -> context.getString(R.string.time_morning)
+            in 12..13 -> context.getString(R.string.time_noon)
+            in 14..17 -> context.getString(R.string.time_afternoon)
+            else -> context.getString(R.string.time_evening)
         }
     } else {
         if (hour < 12) "AM" else "PM"

@@ -74,7 +74,23 @@ object WeatherUtils {
 
                 val request = Request.Builder().url(url).build()
                 val response = client.newCall(request).execute()
+                
+                if (!response.isSuccessful) {
+                    when (response.code) {
+                        401, 403 -> Log.e("WeatherUtils", "Connection refused: ${response.code}")
+                        404 -> Log.e("WeatherUtils", "Weather data not found: 404")
+                        429 -> Log.e("WeatherUtils", "Too many requests: 429")
+                        500, 502 -> Log.e("WeatherUtils", "Server error: ${response.code}")
+                        else -> Log.e("WeatherUtils", "Unexpected error: ${response.code}")
+                    }
+                    return@withContext null
+                }
+
                 val body = response.body.string()
+                if (body.isEmpty()) {
+                    Log.e("WeatherUtils", "Empty response body")
+                    return@withContext null
+                }
 
                 run {
                     val json = JSONObject(body)
@@ -121,6 +137,12 @@ object WeatherUtils {
 
                     WeatherResult(description, cityName, isAlert, formattedTemp, forecastList, code)
                 }
+            } catch (e: java.net.SocketTimeoutException) {
+                Log.e("WeatherUtils", "Connection timeout", e)
+                null
+            } catch (e: java.io.IOException) {
+                Log.e("WeatherUtils", "Network error", e)
+                null
             } catch (e: Exception) {
                 Log.e("WeatherUtils", "Error fetching weather", e)
                 null

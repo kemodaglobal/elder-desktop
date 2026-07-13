@@ -48,6 +48,8 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private var locationCity by mutableStateOf("")
     private var currentTemperature by mutableStateOf("")
 
+    private var triggerSettingsUnlock by mutableStateOf(false)
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -75,24 +77,30 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         val context = this
         when {
             command.contains("相机") || command.contains("拍照") || command.contains("camera") -> {
-                speak("正在打开相机")
+                speak(getString(R.string.opening_camera))
                 com.elderdesktop.util.AppUtils.launchCamera(context)
             }
             command.contains("设置") || command.contains("settings") -> {
-                speak("正在打开桌面设置")
-                startActivity(Intent(context, SettingsActivity::class.java))
+                val settings = DesktopSettings(context)
+                if (settings.usePasscode) {
+                    speak(getString(R.string.please_unlock_first))
+                    triggerSettingsUnlock = true
+                } else {
+                    speak(getString(R.string.opening_desktop_settings))
+                    startActivity(Intent(context, SettingsActivity::class.java))
+                }
             }
             command.contains("天气") || command.contains("weather") -> {
-                speak("正在打开天气")
+                speak(getString(R.string.opening_weather))
                 startActivity(Intent(context, WeatherActivity::class.java))
             }
             command.contains("打电话") || command.contains("拨号") || command.contains("call") -> {
-                speak("正在打开电话")
+                speak(getString(R.string.opening_phone))
                 val dialerIntent = Intent(Intent.ACTION_DIAL)
                 startActivity(dialerIntent)
             }
             else -> {
-                speak("未能识别指令: $command")
+                speak(getString(R.string.command_not_recognized, command))
             }
         }
     }
@@ -101,12 +109,12 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, java.util.Locale.getDefault())
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "请说出指令")
+            putExtra(RecognizerIntent.EXTRA_PROMPT, getString(R.string.voice_prompt))
         }
         try {
             voiceLauncher.launch(intent)
         } catch (_: ActivityNotFoundException) {
-            Toast.makeText(this, "您的设备不支持语音识别", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.voice_not_supported), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -134,15 +142,18 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Transparent
                 ) {
-                    DesktopLayout(
-                        onAppLaunch = { app: AppInfo -> speak(app.label) },
-                        onSpeak = { text: String -> speak(text) },
-                        onVoiceAssistant = { startVoiceEngine() },
-                        weatherText = weatherText,
-                        isWeatherAlert = isWeatherAlert,
-                        locationCity = locationCity,
-                        currentTemperature = currentTemperature
-                    )
+                        DesktopLayout(
+                            onAppLaunch = { app: AppInfo -> speak(app.label) },
+                            onSpeak = { text: String -> speak(text) },
+                            onVoiceAssistant = { startVoiceEngine() },
+                            weatherText = weatherText,
+                            isWeatherAlert = isWeatherAlert,
+                            locationCity = locationCity,
+                            currentTemperature = currentTemperature,
+                            triggerSettingsUnlock = triggerSettingsUnlock,
+                            onSettingsUnlockHandled = { triggerSettingsUnlock = false },
+                            onRefreshWeather = { updateWeather() }
+                        )
                 }
             }
         }
@@ -214,7 +225,37 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         if (currentBest != null) {
             fetchWeatherForLocation(currentBest)
         } else {
-            Log.w("DesktopActivity", "Could not determine last known location")
+            Log.w("DesktopActivity", "Could not determine last known location, trying manual locations")
+            fetchWeatherForManualLocations()
+        }
+    }
+
+    private fun fetchWeatherForManualLocations() {
+        val settings = DesktopSettings(this)
+        val manualLocations = settings.manualWeatherLocations
+        if (manualLocations.isNotEmpty()) {
+            // Try the first manual location for now
+            val firstLocation = manualLocations.first()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val result = WeatherUtils.fetchWeatherForCity(
+                        cityName = firstLocation,
+                        context = this@DesktopActivity,
+                        client = client
+                    )
+
+                    if (result != null) {
+                        withContext(Dispatchers.Main) {
+                            weatherText = result.description
+                            locationCity = result.cityName
+                            isWeatherAlert = result.isAlert
+                            currentTemperature = result.formattedTemp
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("DesktopActivity", "Error updating weather for manual location", e)
+                }
+            }
         }
     }
 

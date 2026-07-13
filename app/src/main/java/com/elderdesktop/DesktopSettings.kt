@@ -43,23 +43,48 @@ class DesktopSettings(context: Context) {
         get() = prefs.getStringSet("selected_apps", emptySet()) ?: emptySet()
         set(value) = prefs.edit { putStringSet("selected_apps", value) }
 
-    fun getSpeedDial(index: Int): Pair<String, String>? {
-        val name = prefs.getString("speed_dial_${index}_name", null) ?: return null
-        val number = prefs.getString("speed_dial_${index}_number", "") ?: ""
-        return Pair(name, number)
+    var manualWeatherLocations: Set<String>
+        get() = prefs.getStringSet("manual_weather_locations", emptySet()) ?: emptySet()
+        set(value) = prefs.edit { putStringSet("manual_weather_locations", value) }
+
+    fun addWeatherLocation(location: String) {
+        val locations = manualWeatherLocations.toMutableSet()
+        if (locations.size < 6) {
+            locations.add(location)
+            manualWeatherLocations = locations
+        }
     }
 
-    fun setSpeedDial(index: Int, name: String, number: String) {
+    fun removeWeatherLocation(location: String) {
+        val locations = manualWeatherLocations.toMutableSet()
+        locations.remove(location)
+        manualWeatherLocations = locations
+    }
+
+    fun getSpeedDial(index: Int): Triple<String, String, String?>? {
+        val name = prefs.getString("speed_dial_${index}_name", null) ?: return null
+        val number = prefs.getString("speed_dial_${index}_number", "") ?: ""
+        val photoUri = prefs.getString("speed_dial_${index}_photo", null)
+        return Triple(name, number, photoUri)
+    }
+
+    fun setSpeedDial(index: Int, name: String, number: String, photoUri: String? = null) {
         prefs.edit {
             putString("speed_dial_${index}_name", name)
-                .putString("speed_dial_${index}_number", number)
+            putString("speed_dial_${index}_number", number)
+            if (photoUri != null) {
+                putString("speed_dial_${index}_photo", photoUri)
+            } else {
+                remove("speed_dial_${index}_photo")
+            }
         }
     }
 
     fun clearSpeedDial(index: Int) {
         prefs.edit {
             remove("speed_dial_${index}_name")
-                .remove("speed_dial_${index}_number")
+            remove("speed_dial_${index}_number")
+            remove("speed_dial_${index}_photo")
         }
     }
 

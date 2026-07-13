@@ -70,7 +70,7 @@ import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 
-@SuppressLint("SuspiciousIndentation")
+@SuppressLint("SuspiciousIndentation", "LocalContextGetResourceValueCall")
 @Composable
 fun DesktopLayout(
     onAppLaunch: (AppInfo) -> Unit,
@@ -79,7 +79,10 @@ fun DesktopLayout(
     weatherText: String,
     isWeatherAlert: Boolean,
     locationCity: String = "",
-    currentTemperature: String = ""
+    currentTemperature: String = "",
+    triggerSettingsUnlock: Boolean = false,
+    onSettingsUnlockHandled: () -> Unit = {},
+    onRefreshWeather: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -111,8 +114,17 @@ fun DesktopLayout(
     var showUnlockDialog by remember { mutableStateOf(false) }
     var pendingApp by remember { mutableStateOf<AppInfo?>(null) }
     var showAddContactDialog by remember { mutableStateOf(false) }
+    var showLocationSelectionDialog by remember { mutableStateOf(false) }
+    var isAddingWeather by remember { mutableStateOf(false) }
     var editingSpeedDialIndex by remember { mutableIntStateOf(-1) }
     var pendingSpeedDialIndex by remember { mutableIntStateOf(-1) }
+
+    LaunchedEffect(triggerSettingsUnlock) {
+        if (triggerSettingsUnlock) {
+            showUnlockDialog = true
+            onSettingsUnlockHandled()
+        }
+    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -303,6 +315,14 @@ fun DesktopLayout(
                                             onClick = {
                                                 val intent = Intent(context, WeatherActivity::class.java)
                                                 context.startActivity(intent)
+                                            },
+                                            onAddLocation = {
+                                                if (settings.usePasscode) {
+                                                    isAddingWeather = true
+                                                    showUnlockDialog = true
+                                                } else {
+                                                    showLocationSelectionDialog = true
+                                                }
                                             }
                                         )
                                     } else {
@@ -424,7 +444,8 @@ fun DesktopLayout(
                             try {
                                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                                     putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                                    putExtra(RecognizerIntent.EXTRA_PROMPT, "请说话")
+                                    val prompt = context.getString(R.string.please_speak)
+                                    putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
                                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 }
                                 context.startActivity(intent)
@@ -442,7 +463,8 @@ fun DesktopLayout(
                                         }
                                         context.startActivity(intent)
                                     } catch (_: Exception) {
-                                        Toast.makeText(context, "无法启动语音助手", Toast.LENGTH_SHORT).show()
+                                        val errorMsg = context.getString(R.string.unable_to_start_voice_assistant)
+                                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
@@ -473,12 +495,34 @@ fun DesktopLayout(
                         } else if (index != -1) {
                             editingSpeedDialIndex = index
                             showAddContactDialog = true
+                        } else if (isAddingWeather) {
+                            showLocationSelectionDialog = true
+                        } else {
+                            // Handle external trigger (e.g. voice command)
+                            context.startActivity(Intent(context, SettingsActivity::class.java))
                         }
                     },
                     onDismiss = {
                         showUnlockDialog = false
                         pendingApp = null
                         pendingSpeedDialIndex = -1
+                        isAddingWeather = false
+                    }
+                )
+            }
+
+            if (showLocationSelectionDialog) {
+                LocationSelectionDialog(
+                    settings = settings,
+                    onDismiss = {
+                        showLocationSelectionDialog = false
+                        isAddingWeather = false
+                    },
+                    onLocationAdded = {
+                        // Refresh weather or show toast
+                        onRefreshWeather()
+                        val msg = context.getString(R.string.location_added)
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
                 )
             }

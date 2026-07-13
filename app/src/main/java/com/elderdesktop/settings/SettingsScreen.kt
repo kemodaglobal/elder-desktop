@@ -2,8 +2,10 @@ package com.elderdesktop.settings
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -12,10 +14,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import coil3.compose.rememberAsyncImagePainter
 import com.elderdesktop.DesktopSettings
 import com.elderdesktop.R
 import com.elderdesktop.model.AppInfo
@@ -127,7 +133,7 @@ fun SettingsScreen() {
                         }) {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = "Remove",
+                                contentDescription = stringResource(R.string.delete),
                                 tint = Color(0xFFE74C3C)
                             )
                         }
@@ -156,17 +162,30 @@ fun SettingsScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = contact?.first ?: stringResource(R.string.add_contact),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            if (contact != null) {
-                                Text(
-                                    text = contact.second,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            if (contact?.third != null) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(contact.third!!.toUri()),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
                                 )
+                                Spacer(modifier = Modifier.width(12.dp))
+                            }
+                            Column {
+                                Text(
+                                    text = contact?.first ?: stringResource(R.string.add_contact),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                if (contact != null) {
+                                    Text(
+                                        text = contact.second,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                    )
+                                }
                             }
                         }
                         
@@ -310,6 +329,41 @@ fun SettingsScreen() {
             TextButton(onClick = { showPasscodeDialog = true }) {
                 Text(stringResource(R.string.change_passcode, passcode))
             }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        // ====== 手动天气位置 ======
+        Text(stringResource(R.string.weather), style = MaterialTheme.typography.titleLarge)
+        
+        val manualLocations = settings.manualWeatherLocations
+        if (manualLocations.isNotEmpty()) {
+            manualLocations.forEach { loc ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(loc, modifier = Modifier.padding(start = 8.dp))
+                        IconButton(onClick = {
+                            settings.removeWeatherLocation(loc)
+                            speedDialUpdateTrigger++ // Reuse trigger to refresh
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFE74C3C))
+                        }
+                    }
+                }
+            }
+        } else {
+            Text(
+                text = stringResource(R.string.no_manual_locations),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

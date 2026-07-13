@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                 val value = display.text.toString().toDouble() / 100
                 display.text = value.toString()
             } catch (_: Exception) {
-                display.text = "Error"
+                display.text = getString(R.string.error)
                 stateError = true
                 lastNumeric = false
             }
@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity() {
                 display.text = result.toString()
                 lastDot = display.text.contains(".")
             } catch (_: Exception) {
-                display.text = "Error"
+                display.text = getString(R.string.error)
                 stateError = true
                 lastNumeric = false
             }
