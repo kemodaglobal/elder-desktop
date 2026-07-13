@@ -6,6 +6,9 @@
     <string name="layout">布局</string>
     <string name="layout_2x3">2 x 3 布局</string>
     <string name="layout_3x4">3 x 4 布局</string>
+    <string name="layout_3x2">3 x 2 布局</string>
+    <string name="layout_4x3">4 x 3 布局</string>
+    <string name="layout_6x4">6 x 4 布局</string>
     <string name="features">功能</string>
     <string name="voice_assistant_button">语音助手按钮</string>
     <string name="voice_assistant_mode">语音助手模式</string>

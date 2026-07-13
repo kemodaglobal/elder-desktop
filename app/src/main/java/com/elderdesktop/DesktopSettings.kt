@@ -97,6 +97,25 @@ class DesktopSettings(context: Context) {
         layoutRows = 5
         layoutCols = 3
     }
+
+    fun use3x2() {
+        layoutRows = 3
+        layoutCols = 3
+    }
+
+    fun use4x3() {
+        layoutRows = 4
+        layoutCols = 4
+    }
+
+    fun use6x4() {
+        layoutRows = 5
+        layoutCols = 6
+    }
     
     val is2x3: Boolean get() = layoutCols == 2 && layoutRows == 4
+    val is3x4: Boolean get() = layoutCols == 3 && layoutRows == 5
+    val is3x2: Boolean get() = layoutCols == 3 && layoutRows == 3
+    val is4x3: Boolean get() = layoutCols == 4 && layoutRows == 4
+    val is6x4: Boolean get() = layoutCols == 6 && layoutRows == 5
 }

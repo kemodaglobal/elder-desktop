@@ -6,6 +6,9 @@
     <string name="layout">레이아웃</string>
     <string name="layout_2x3">2 x 3 레이아웃</string>
     <string name="layout_3x4">3 x 4 레이아웃</string>
+    <string name="layout_3x2">3 x 2 레이아웃</string>
+    <string name="layout_4x3">4 x 3 레이아웃</string>
+    <string name="layout_6x4">6 x 4 레이아웃</string>
     <string name="features">기능</string>
     <string name="voice_assistant_button">음성 비서 버튼</string>
     <string name="voice_assistant_mode">음성 비서 모드</string>

@@ -1,5 +1,7 @@
 package com.elderdesktop
 
+import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,9 +17,15 @@ import com.elderdesktop.settings.SettingsScreen
 import com.elderdesktop.ui.theme.ElderDesktopTheme
 
 class SettingsActivity : ComponentActivity() {
+    @SuppressLint("SourceLockedOrientation")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
         enableEdgeToEdge()
         setContent {
             ElderDesktopTheme {

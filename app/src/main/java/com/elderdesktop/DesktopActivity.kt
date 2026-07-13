@@ -123,10 +123,11 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     @SuppressLint("SourceLockedOrientation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
+        val isLargeScreen = resources.configuration.smallestScreenWidthDp >= 600
         // Lock to portrait only on small screens (phones)
         // This avoids the Chrome OS lint warning and respects Android 17 large-screen policies
-        if (resources.configuration.smallestScreenWidthDp < 600) {
+        if (!isLargeScreen) {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         

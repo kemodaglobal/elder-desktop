@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -34,7 +35,6 @@ fun SettingsScreen() {
     val context = LocalContext.current
     val settings = remember { DesktopSettings(context) }
     
-    var is2x3 by remember { mutableStateOf(settings.is2x3) }
     var showVoice by remember { mutableStateOf(settings.showVoiceAssistant) }
     var voiceMode by remember { mutableIntStateOf(settings.voiceAssistantMode) }
     var voiceAnnouncements by remember { mutableStateOf(settings.voiceAnnouncements) }
@@ -69,28 +69,65 @@ fun SettingsScreen() {
         // ====== 布局选择 ======
         Text(stringResource(R.string.layout), style = MaterialTheme.typography.titleLarge)
         
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            RadioButton(
-                selected = is2x3,
-                onClick = {
-                    is2x3 = true
-                    settings.use2x3()
-                    speedDialUpdateTrigger++
-                }
-            )
-            Text(stringResource(R.string.layout_2x3), modifier = Modifier.padding(start = 8.dp))
-        }
+        val configuration = LocalConfiguration.current
+        val sw = configuration.smallestScreenWidthDp
         
+        if (sw < 600) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = settings.is2x3,
+                    onClick = {
+                        settings.use2x3()
+                        speedDialUpdateTrigger++
+                    }
+                )
+                Text(stringResource(R.string.layout_2x3), modifier = Modifier.padding(start = 8.dp))
+            }
+            
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = settings.is3x4,
+                    onClick = {
+                        settings.use3x4()
+                        speedDialUpdateTrigger++
+                    }
+                )
+                Text(stringResource(R.string.layout_3x4), modifier = Modifier.padding(start = 8.dp))
+            }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = settings.is4x3,
+                    onClick = {
+                        settings.use4x3()
+                        speedDialUpdateTrigger++
+                    }
+                )
+                Text(stringResource(R.string.layout_4x3), modifier = Modifier.padding(start = 8.dp))
+            }
+            
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = settings.is6x4,
+                    onClick = {
+                        settings.use6x4()
+                        speedDialUpdateTrigger++
+                    }
+                )
+                Text(stringResource(R.string.layout_6x4), modifier = Modifier.padding(start = 8.dp))
+            }
+        }
+
+        // Dedicated layout for dual-screen/rotatable requirements
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(
-                selected = !is2x3,
+                selected = settings.is3x2,
                 onClick = {
-                    is2x3 = false
-                    settings.use3x4()
+                    settings.use3x2()
                     speedDialUpdateTrigger++
                 }
             )
-            Text(stringResource(R.string.layout_3x4), modifier = Modifier.padding(start = 8.dp))
+            Text(stringResource(R.string.layout_3x2), modifier = Modifier.padding(start = 8.dp))
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

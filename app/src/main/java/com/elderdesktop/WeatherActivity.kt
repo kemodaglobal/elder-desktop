@@ -2,6 +2,7 @@ package com.elderdesktop
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
@@ -49,9 +50,15 @@ class WeatherActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("SourceLockedOrientation")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
         enableEdgeToEdge()
         checkLocationPermissions()
         setContent {

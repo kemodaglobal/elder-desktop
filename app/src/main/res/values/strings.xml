@@ -6,6 +6,9 @@
     <string name="layout">Layout</string>
     <string name="layout_2x3">2 x 3 Layout</string>
     <string name="layout_3x4">3 x 4 Layout</string>
+    <string name="layout_3x2">3 x 2 Layout</string>
+    <string name="layout_4x3">4 x 3 Layout</string>
+    <string name="layout_6x4">6 x 4 Layout</string>
     <string name="features">Features</string>
     <string name="voice_assistant_button">Voice Assistant Button</string>
     <string name="voice_assistant_mode">Voice Assistant Mode</string>

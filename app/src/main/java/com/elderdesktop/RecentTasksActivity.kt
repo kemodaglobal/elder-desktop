@@ -1,9 +1,11 @@
 package com.elderdesktop
 
+import android.annotation.SuppressLint
 import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -32,8 +34,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class RecentTasksActivity : ComponentActivity() {
+    @SuppressLint("SourceLockedOrientation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
         enableEdgeToEdge()
         setContent {
             ElderDesktopTheme {

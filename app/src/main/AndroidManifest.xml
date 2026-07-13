@@ -39,6 +39,8 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="unspecified"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
             android:stateNotNeeded="true"
             android:theme="@style/Theme.ElderDesktop.Desktop"
             tools:ignore="DiscouragedApi">
@@ -79,6 +81,8 @@
             android:exported="false"
             android:label="Weather"
             android:screenOrientation="unspecified"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
             android:theme="@style/Theme.ElderDesktop.Desktop"
             tools:ignore="DiscouragedApi">
         </activity>
