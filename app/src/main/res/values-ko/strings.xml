@@ -16,6 +16,7 @@
     <string name="voice_assistant_engine">내장 음성 엔진</string>
     <string name="voice_assistant_engine_desc">입력에 따라 즉시 동작 실행</string>
     <string name="voice_announcements">음성 안내</string>
+    <string name="speech_rate">음성 속도</string>
     <string name="basic_mode">기본 모드</string>
     <string name="basic_mode_desc">인터넷이 없는 사용자를 위한 심플 모드</string>
     <string name="peace_of_mind_lock">안심 잠금</string>
@@ -35,6 +36,7 @@
     <string name="voice_assistant">음성 비서</string>
     <string name="system_settings">시스템 설정</string>
     <string name="add_contact">연락처 추가</string>
+    <string name="import_contacts">연락처에서 가져오기</string>
     <string name="name">이름</string>
     <string name="phone_number">전화번호</string>
     <string name="edit_contact">연락처 수정</string>
@@ -43,6 +45,8 @@
     <string name="select_apps">홈 화면에 표시할 앱 선택</string>
     <string name="apps">앱</string>
     <string name="weather">날씨</string>
+    <string name="weather_provider">날씨 제공업체</string>
+    <string name="weather_api_key">날씨 API 키</string>
     <string name="loading">로딩 중…</string>
     <string name="weather_alert">기상 특보!</string>
     <string name="c">--°C</string>
@@ -55,6 +59,12 @@
     <string name="weather_rain_showers">소나기</string>
     <string name="weather_thunderstorm">뇌우</string>
     <string name="weather_cloudy">흐림</string>
+    <string name="weather_error">날씨 오류: %1$s</string>
+    <string name="weather_error_auth">인증 실패 (API 키를 확인하세요)</string>
+    <string name="weather_error_limit">요청 한도 초과</string>
+    <string name="weather_error_network">네트워크 오류</string>
+    <string name="weather_error_server">서버 오류</string>
+    <string name="weather_error_no_data">데이터를 받지 못했습니다</string>
     <string name="add_location">위치 추가</string>
     <string name="select_location">위치 선택</string>
     <string name="province">도/광역시</string>
@@ -71,12 +81,81 @@
     <string name="voice_not_supported">기기에서 음성 인식을 지원하지 않습니다</string>
     <string name="please_speak">말씀해 주세요</string>
     <string name="unable_to_start_voice_assistant">음성 비서를 시작할 수 없습니다</string>
+    <string name="desktop_notifications">데스크톱 알림</string>
+    <string name="desktop_notifications_desc">홈 화면에 수신된 알림을 표시합니다</string>
+    <string name="prevent_sleep">취침 모드 방지</string>
+    <string name="prevent_sleep_desc">데스크톱이 활성화된 동안 화면을 켬 상태로 유지합니다</string>
+    <string name="deepseek_chat">DeepSeek 대화</string>
+    <string name="deepseek_chat_desc">음성으로 DeepSeek AI와 대화하기</string>
+    <string name="deepseek_api_key">DeepSeek API 키</string>
+    <string name="openai_api_key">OpenAI API 키</string>
+    <string name="google_ai_api_key">Google AI API 키</string>
+    <string name="enter_api_key">API 키 입력</string>
+    <string name="ai_chat_desc">음성으로 AI 비서와 대화하세요.</string>
+    <string name="notification_permission_required">알림 접근 권한 필요</string>
+    <string name="notification_permission_desc">데스크톱에 알림을 표시하려면 시스템 알림 설정에서 \"어르신 데스크톱\"을 활성화해 주세요.</string>
+    <string name="overlay_permission_required">다른 앱 위에 표시 권한 필요</string>
+    <string name="overlay_permission_desc">알림을 다른 앱 위에 표시하려면 \"다른 앱 위에 표시\" 권한을 허용해 주세요.</string>
+    <string name="grant_permission">권한 허용</string>
     <string name="location_added">위치가 추가되었습니다</string>
     <string name="no_manual_locations">추가된 수동 위치가 없습니다</string>
+    <string name="calling_name">%1$s 님에게 전화하는 중…</string>
+    <string name="contact_not_found">연락처 %1$s 을(를) 찾을 수 없습니다</string>
+    <string name="font_size">글꼴 크기</string>
+    <string name="icon_size">아이콘 크기</string>
+    <string name="icon_shape">아이콘 모양</string>
+    <string name="shape_rounded">둥근 모서리</string>
+    <string name="shape_circle">원형</string>
+    <string name="shape_square">정사각형</string>
+    <string name="shape_native">시스템 기본값</string>
+    <string name="high_contrast">고대비</string>
+    <string name="theme_selection">테마 스타일</string>
+    <string name="theme_classic">클래식 블루</string>
+    <string name="theme_emerald">에메랄드 그린</string>
+    <string name="theme_rose">로즈 레드</string>
+    <string name="theme_orange">웜 오렌지</string>
+    <string name="theme_high_contrast">고대비 블랙</string>
+    <string name="font_selection">글꼴 스타일</string>
+    <string name="font_default">시스템 기본값</string>
+    <string name="font_serif">바탕체 (단정함)</string>
+    <string name="font_monospace">고딕체 (깔끔함)</string>
+    <string name="about">정보</string>
+    <string name="about_desc">버전 및 빌드 정보 보기</string>
+    <string name="privacy_policy">개인정보 처리방침</string>
+    <string name="privacy_agreement_title">개인정보 처리방침 동의</string>
+    <string name="privacy_agreement_desc">기본적인 런처 서비스를 제공하기 위해 몇 가지 권한이 필요합니다. 계속하기 전에 개인정보 처리방침을 읽고 동의해 주세요.</string>
+    <string name="agree">동의</string>
+    <string name="decline">거부</string>
+    <string name="privacy_policy_content">
+        &lt;b&gt;어르신 데스크톱 개인정보 처리방침&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
+        귀하의 개인정보는 저희에게 중요합니다. 이 방침은 귀하의 데이터를 처리하는 방법을 설명합니다.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;1. 데이터 수집:&lt;/b&gt; 저희는 귀하의 개인정보를 수집하거나 제3자 서버에 업로드하지 않습니다. 모든 설정과 연락처는 귀하의 기기에 로컬로 저장됩니다.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;2. 권한:&lt;/b&gt;&lt;br/&gt;
+        - &lt;b&gt;위치:&lt;/b&gt; 귀하 지역의 날씨 데이터를 가져오는 데만 사용됩니다.&lt;br/&gt;
+        - &lt;b&gt;연락처:&lt;/b&gt; 단축 다이얼 바로가기를 표시하고 연락처 정보를 가져오는 데 사용됩니다.&lt;br/&gt;
+        - &lt;b&gt;알림:&lt;/b&gt; 데스크톱에 수신 메시지를 표시하는 데 사용됩니다.&lt;br/&gt;
+        - &lt;b&gt;사진:&lt;/b&gt; 연락처 프로필 사진을 설정하는 데만 사용됩니다.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;3. 광고 없음:&lt;/b&gt; 이 앱은 엄격히 비상업적이며 광고 SDK를 포함하지 않습니다.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;4. 오픈 소스:&lt;/b&gt; GitHub/GitLab에서 소스 코드를 검토하여 데이터 처리 로직을 확인할 수 있습니다.
+    </string>
+    <string name="version_label">버전: %1$s (%2$s)</string>
+    <string name="build_time_label">빌드 시간: %1$s</string>
+    <string name="view_github">GitHub에서 보기</string>
+    <string name="view_gitlab">GitLab에서 보기</string>
+    <string name="designed_with_love">어르신들을 위해 정성을 다해 디자인되었습니다.</string>
+    <string name="open_source_notice">이 소프트웨어는 오픈 소스이며 무료입니다. 광고 SDK를 삽입하는 것은 엄격히 금지됩니다.</string>
     <string name="time_midnight">자정</string>
     <string name="time_dawn">새벽</string>
     <string name="time_morning">오전</string>
     <string name="time_noon">정오</string>
     <string name="time_afternoon">오후</string>
     <string name="time_evening">저녁</string>
+    <string name="keyword_camera">카메라,사진,camera</string>
+    <string name="keyword_settings">설정,데스크톱 설정,settings</string>
+    <string name="keyword_weather">날씨,weather</string>
+    <string name="keyword_call">전화,발신,call</string>
+    <string name="keyword_call_prefix">에게 전화</string>
+    <string name="keyword_contacts">연락처,contacts</string>
+    <string name="ai_provider">AI 공급업체</string>
+    <string name="ai_chat">AI 채팅</string>
 </resources>

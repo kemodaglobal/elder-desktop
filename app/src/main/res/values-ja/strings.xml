@@ -16,6 +16,7 @@
     <string name="voice_assistant_engine">内蔵音声エンジン</string>
     <string name="voice_assistant_engine_desc">入力に基づいて直接アクションを実行する</string>
     <string name="voice_announcements">音声読み上げ</string>
+    <string name="speech_rate">音声速度</string>
     <string name="basic_mode">基本モード</string>
     <string name="basic_mode_desc">インターネットを利用しないユーザー向けのシンプルモード</string>
     <string name="peace_of_mind_lock">安心ロック</string>
@@ -35,6 +36,7 @@
     <string name="voice_assistant">音声アシスタント</string>
     <string name="system_settings">システム設定</string>
     <string name="add_contact">連絡先を追加</string>
+    <string name="import_contacts">連絡先からインポート</string>
     <string name="name">名前</string>
     <string name="phone_number">電話番号</string>
     <string name="edit_contact">連絡先を編集</string>
@@ -43,6 +45,8 @@
     <string name="select_apps">ホーム画面に表示するアプリを選択</string>
     <string name="apps">アプリ</string>
     <string name="weather">天気</string>
+    <string name="weather_provider">天気提供元</string>
+    <string name="weather_api_key">天気 API キー</string>
     <string name="loading">読み込み中…</string>
     <string name="weather_alert">気象警報！</string>
     <string name="c">--°C</string>
@@ -55,6 +59,12 @@
     <string name="weather_rain_showers">にわか雨</string>
     <string name="weather_thunderstorm">雷雨</string>
     <string name="weather_cloudy">曇り</string>
+    <string name="weather_error">天気エラー: %1$s</string>
+    <string name="weather_error_auth">認証に失敗しました (API キーを確認してください)</string>
+    <string name="weather_error_limit">レート制限を超えました</string>
+    <string name="weather_error_network">ネットワークエラー</string>
+    <string name="weather_error_server">サーバーエラー</string>
+    <string name="weather_error_no_data">データを受信できませんでした</string>
     <string name="add_location">場所を追加</string>
     <string name="select_location">場所を選択</string>
     <string name="province">都道府県</string>
@@ -71,12 +81,81 @@
     <string name="voice_not_supported">お使いのデバイスは音声認識をサポートしていません</string>
     <string name="please_speak">お話しください</string>
     <string name="unable_to_start_voice_assistant">音声アシスタントを起動できません</string>
+    <string name="desktop_notifications">デスクトップ通知</string>
+    <string name="desktop_notifications_desc">ホーム画面に受信した通知を表示します</string>
+    <string name="prevent_sleep">スリープモードを防止</string>
+    <string name="prevent_sleep_desc">デスクトップがアクティブな間、画面をオンのままにします</string>
+    <string name="deepseek_chat">DeepSeek チャット</string>
+    <string name="deepseek_chat_desc">音声で DeepSeek AI とチャットする</string>
+    <string name="deepseek_api_key">DeepSeek API キー</string>
+    <string name="openai_api_key">OpenAI APIキー</string>
+    <string name="google_ai_api_key">Google AI APIキー</string>
+    <string name="enter_api_key">API キーを入力</string>
+    <string name="ai_chat_desc">音声でAIアシスタントと会話する</string>
+    <string name="notification_permission_required">通知へのアクセスが必要です</string>
+    <string name="notification_permission_desc">デスクトップに通知を表示するには、システム設定で「シニアデスクトップ」を有効にしてください。</string>
+    <string name="overlay_permission_required">オーバーレイ権限が必要です</string>
+    <string name="overlay_permission_desc">他のアプリの上に通知を表示するには、「他のアプリの上に重ねて表示」権限を許可してください。</string>
+    <string name="grant_permission">権限を許可</string>
     <string name="location_added">場所が追加されました</string>
     <string name="no_manual_locations">手動で追加された場所はありません</string>
+    <string name="calling_name">%1$s に発信しています…</string>
+    <string name="contact_not_found">連絡先 %1$s が見つかりません</string>
+    <string name="font_size">フォントサイズ</string>
+    <string name="icon_size">アイコンサイズ</string>
+    <string name="icon_shape">アイコンの形状</string>
+    <string name="shape_rounded">角丸</string>
+    <string name="shape_circle">円形</string>
+    <string name="shape_square">正方形</string>
+    <string name="shape_native">システムデフォルト</string>
+    <string name="high_contrast">高コントラスト</string>
+    <string name="theme_selection">テーマスタイル</string>
+    <string name="theme_classic">クラシックブルー</string>
+    <string name="theme_emerald">エメラルドグリーン</string>
+    <string name="theme_rose">ローズレッド</string>
+    <string name="theme_orange">ウォームオレンジ</string>
+    <string name="theme_high_contrast">ハイコントラストブラック</string>
+    <string name="font_selection">フォントスタイル</string>
+    <string name="font_default">システムデフォルト</string>
+    <string name="font_serif">セリフ (フォーマル)</string>
+    <string name="font_monospace">等幅フォント (クリア)</string>
+    <string name="about">バージョン情報</string>
+    <string name="about_desc">バージョンとビルド情報を表示</string>
+    <string name="privacy_policy">プライバシーポリシー</string>
+    <string name="privacy_agreement_title">プライバシーポリシーへの同意</string>
+    <string name="privacy_agreement_desc">基本的なランチャーサービスを提供するには、特定の権限が必要です。続行する前にプライバシーポリシーを読み、同意してください。</string>
+    <string name="agree">同意する</string>
+    <string name="decline">拒否する</string>
+    <string name="privacy_policy_content">
+        &lt;b&gt;シニアデスクトップ プライバシーポリシー&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
+        あなたのプライバシーは私たちにとって重要です。このポリシーでは、データの取り扱いについて説明します。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;1. データ収集:&lt;/b&gt; 私たちはあなたの個人情報を収集したり、第三者のサーバーにアップロードしたりしません。すべての設定と連絡先はデバイスのローカルに保存されます。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;2. 権限:&lt;/b&gt;&lt;br/&gt;
+        - &lt;b&gt;位置情報:&lt;/b&gt; あなたの地域の天気データを取得するためにのみ使用されます。&lt;br/&gt;
+        - &lt;b&gt;連絡先:&lt;/b&gt; スピードダイヤルのショートカットを表示し、連絡先情報をインポートするために使用されます。&lt;br/&gt;
+        - &lt;b&gt;通知:&lt;/b&gt; デスクトップに着信メッセージを表示するために使用されます。&lt;br/&gt;
+        - &lt;b&gt;写真:&lt;/b&gt; 連絡先のプロフィール写真を設定するためにのみ使用されます。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;3. 広告なし:&lt;/b&gt; このアプリは厳密に非営利目的であり、広告SDKは含まれていません。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;4. オープンソース:&lt;/b&gt; GitHub/GitLabのソースコードを確認することで、私たちのデータ処理ロジックを検証できます。
+    </string>
+    <string name="version_label">バージョン: %1$s (%2$s)</string>
+    <string name="build_time_label">ビルド時間: %1$s</string>
+    <string name="view_github">GitHubで表示</string>
+    <string name="view_gitlab">GitLabで表示</string>
+    <string name="designed_with_love">高齢者のために愛情を込めて設計されました。</string>
+    <string name="open_source_notice">本ソフトウェアはオープンソースかつ無料です。広告用SDKの組み込みは厳格に禁止されています。</string>
     <string name="time_midnight">真夜中</string>
     <string name="time_dawn">明け方</string>
     <string name="time_morning">午前</string>
     <string name="time_noon">正午</string>
     <string name="time_afternoon">午後</string>
     <string name="time_evening">夜</string>
+    <string name="keyword_camera">カメラ,写真,camera</string>
+    <string name="keyword_settings">設定,デスクトップ設定,settings</string>
+    <string name="keyword_weather">天気,天気予報,weather</string>
+    <string name="keyword_call">電話,発信,call</string>
+    <string name="keyword_call_prefix">に電話</string>
+    <string name="keyword_contacts">連絡先,contacts</string>
+    <string name="ai_provider">AIプロバイダー</string>
+    <string name="ai_chat">AIチャット</string>
 </resources>

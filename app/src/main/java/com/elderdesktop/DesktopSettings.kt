@@ -27,6 +27,10 @@ class DesktopSettings(context: Context) {
         get() = prefs.getBoolean("voice_announcements", true)
         set(value) = prefs.edit { putBoolean("voice_announcements", value) }
 
+    var speechRate: Float
+        get() = prefs.getFloat("speech_rate", 1.0f)
+        set(value) = prefs.edit { putFloat("speech_rate", value) }
+
     var usePasscode: Boolean
         get() = prefs.getBoolean("use_passcode", false)
         set(value) = prefs.edit { putBoolean("use_passcode", value) }
@@ -43,9 +47,73 @@ class DesktopSettings(context: Context) {
         get() = prefs.getStringSet("selected_apps", emptySet()) ?: emptySet()
         set(value) = prefs.edit { putStringSet("selected_apps", value) }
 
+    var fontSizeMultiplier: Float
+        get() = prefs.getFloat("font_size_multiplier", 1.0f)
+        set(value) = prefs.edit { putFloat("font_size_multiplier", value) }
+
+    var iconSizeMultiplier: Float
+        get() = prefs.getFloat("icon_size_multiplier", 1.0f)
+        set(value) = prefs.edit { putFloat("icon_size_multiplier", value) }
+
+    var iconShape: String
+        get() = prefs.getString("icon_shape", "rounded") ?: "rounded" // rounded, circle, square, native
+        set(value) = prefs.edit { putString("icon_shape", value) }
+
+    var highContrastMode: Boolean
+        get() = prefs.getBoolean("high_contrast_mode", false)
+        set(value) = prefs.edit { putBoolean("high_contrast_mode", value) }
+
+    var themeChoice: String
+        get() = prefs.getString("theme_choice", "classic") ?: "classic" // classic, emerald, rose, orange
+        set(value) = prefs.edit { putString("theme_choice", value) }
+
+    var fontChoice: String
+        get() = prefs.getString("font_choice", "default") ?: "default" // default, serif, monospace
+        set(value) = prefs.edit { putString("font_choice", value) }
+
+    var enableDesktopNotifications: Boolean
+        get() = prefs.getBoolean("enable_desktop_notifications", false)
+        set(value) = prefs.edit { putBoolean("enable_desktop_notifications", value) }
+
+    var preventSleep: Boolean
+        get() = prefs.getBoolean("prevent_sleep", false)
+        set(value) = prefs.edit { putBoolean("prevent_sleep", value) }
+
     var manualWeatherLocations: Set<String>
         get() = prefs.getStringSet("manual_weather_locations", emptySet()) ?: emptySet()
         set(value) = prefs.edit { putStringSet("manual_weather_locations", value) }
+
+    var weatherProvider: String
+        get() = prefs.getString("weather_provider", "open-meteo") ?: "open-meteo" // open-meteo, qweather, openweather
+        set(value) = prefs.edit { putString("weather_provider", value) }
+
+    var weatherApiKey: String
+        get() = prefs.getString("weather_api_key", "") ?: ""
+        set(value) = prefs.edit { putString("weather_api_key", value) }
+
+    var privacyAccepted: Boolean
+        get() = prefs.getBoolean("privacy_accepted", false)
+        set(value) = prefs.edit { putBoolean("privacy_accepted", value) }
+
+    var enableDeepSeek: Boolean
+        get() = prefs.getBoolean("enable_deepseek", false)
+        set(value) = prefs.edit { putBoolean("enable_deepseek", value) }
+
+    var deepSeekApiKey: String
+        get() = prefs.getString("deepseek_api_key", "") ?: ""
+        set(value) = prefs.edit { putString("deepseek_api_key", value) }
+
+    var aiProvider: String
+        get() = prefs.getString("ai_provider", "deepseek") ?: "deepseek" // deepseek, openai, google
+        set(value) = prefs.edit { putString("ai_provider", value) }
+
+    var openAiApiKey: String
+        get() = prefs.getString("openai_api_key", "") ?: ""
+        set(value) = prefs.edit { putString("openai_api_key", value) }
+
+    var googleAiApiKey: String
+        get() = prefs.getString("google_ai_api_key", "") ?: ""
+        set(value) = prefs.edit { putString("google_ai_api_key", value) }
 
     fun addWeatherLocation(location: String) {
         val locations = manualWeatherLocations.toMutableSet()

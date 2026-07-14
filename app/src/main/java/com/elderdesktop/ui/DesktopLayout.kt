@@ -1,13 +1,14 @@
 package com.elderdesktop.ui
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.speech.RecognizerIntent
+import android.service.notification.StatusBarNotification
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,9 +29,13 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -47,13 +52,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.palette.graphics.Palette
+import coil3.compose.AsyncImage
 import com.elderdesktop.DesktopSettings
 import com.elderdesktop.R
 import com.elderdesktop.SettingsActivity
@@ -63,6 +73,7 @@ import com.elderdesktop.model.AppType
 import com.elderdesktop.model.DesktopConfig
 import com.elderdesktop.model.DesktopXmlItem
 import com.elderdesktop.model.GridItem
+import com.elderdesktop.notification.NotificationRepository
 import com.elderdesktop.util.AppUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -93,6 +104,21 @@ fun DesktopLayout(
     var settingsVersion by remember { mutableIntStateOf(0) }
     val settings = remember(settingsVersion) { DesktopSettings(context) }
 
+    val highContrastFilter = if (settings.highContrastMode) {
+        androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+            androidx.compose.ui.graphics.ColorMatrix(
+                floatArrayOf(
+                    1.5f, 0f, 0f, 0f, -64f,
+                    0f, 1.5f, 0f, 0f, -64f,
+                    0f, 0f, 1.5f, 0f, -64f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            )
+        )
+    } else null
+
+    val labelSize = 22.sp * settings.fontSizeMultiplier
+
     val config = remember(settings.is2x3) {
         val currentCountry = Locale.getDefault().country
         val xmlId = if (settings.is2x3) {
@@ -118,6 +144,15 @@ fun DesktopLayout(
     var isAddingWeather by remember { mutableStateOf(false) }
     var editingSpeedDialIndex by remember { mutableIntStateOf(-1) }
     var pendingSpeedDialIndex by remember { mutableIntStateOf(-1) }
+    var showPrivacyAgreement by remember { mutableStateOf(!settings.privacyAccepted) }
+
+    if (showPrivacyAgreement) {
+        PrivacyAgreementDialog(
+            settings = settings,
+            onAccept = { showPrivacyAgreement = false },
+            onDecline = { (context as? ComponentActivity)?.finish() }
+        )
+    }
 
     LaunchedEffect(triggerSettingsUnlock) {
         if (triggerSettingsUnlock) {
@@ -144,38 +179,29 @@ fun DesktopLayout(
     LaunchedEffect(settingsVersion) {
         val fetchedApps = withContext(Dispatchers.IO) {
             val allLaunchable = AppUtils.getLaunchableApps(context)
-            
-            // Determine which apps we actually need to display
             val firstScreenMap = AppUtils.getFirstScreenPackageMap()
             val neededPackageNames = mutableSetOf<String>()
 
             if (settings.isBasicMode) {
-                // In Basic Mode, only provide Gallery, Camera, Dialer, Contacts, and Settings
-                listOf(
-                    AppType.GALLERY, AppType.CAMERA, AppType.DIALER, AppType.CONTACTS, AppType.SETTINGS
-                ).forEach { type ->
+                listOf(AppType.GALLERY, AppType.CAMERA, AppType.DIALER, AppType.CONTACTS, AppType.SETTINGS).forEach { type ->
                     neededPackageNames.addAll(firstScreenMap[type] ?: emptyList())
                 }
             } else {
-                // XML first screen
                 config.firstScreen.forEach { item ->
                     when(item) {
                         is DesktopXmlItem.Type -> neededPackageNames.addAll(firstScreenMap[item.type] ?: emptyList())
                         is DesktopXmlItem.Package -> neededPackageNames.add(item.packageName)
                     }
                 }
-                // XML second screen
                 config.secondScreen.forEach { item ->
                     when(item) {
                         is DesktopXmlItem.Type -> neededPackageNames.addAll(firstScreenMap[item.type] ?: emptyList())
                         is DesktopXmlItem.Package -> neededPackageNames.add(item.packageName)
                     }
                 }
-                // User selected
                 neededPackageNames.addAll(settings.selectedApps)
             }
 
-            // Filter and process only needed apps
             allLaunchable.filter { it.packageName in neededPackageNames || (neededPackageNames.isEmpty() && !settings.isBasicMode) }.map { app ->
                 val bitmap = app.icon.toBitmap()
                 val palette = Palette.from(bitmap).generate()
@@ -193,25 +219,24 @@ fun DesktopLayout(
         }
     } else {
         val firstScreenMap = AppUtils.getFirstScreenPackageMap()
-        val usedPackageNames = mutableSetOf<String>()
-
-        fun resolveXmlItems(items: List<DesktopXmlItem>): List<AppInfo> {
+        
+        fun resolveXmlItems(items: List<DesktopXmlItem>, usedPackages: MutableSet<String>): List<AppInfo> {
             val resolved = mutableListOf<AppInfo>()
             for (item in items) {
                 when (item) {
                     is DesktopXmlItem.Type -> {
                         val possiblePackages = firstScreenMap[item.type] ?: emptyList()
-                        val foundApp = allApps.find { it.packageName in possiblePackages && it.packageName !in usedPackageNames }
+                        val foundApp = allApps.find { it.packageName in possiblePackages && it.packageName !in usedPackages }
                         if (foundApp != null) {
                             resolved.add(foundApp)
-                            usedPackageNames.add(foundApp.packageName)
+                            usedPackages.add(foundApp.packageName)
                         }
                     }
                     is DesktopXmlItem.Package -> {
-                        val foundApp = allApps.find { it.packageName == item.packageName && it.packageName !in usedPackageNames }
+                        val foundApp = allApps.find { it.packageName == item.packageName && it.packageName !in usedPackages }
                         if (foundApp != null) {
                             resolved.add(foundApp)
-                            usedPackageNames.add(foundApp.packageName)
+                            usedPackages.add(foundApp.packageName)
                         }
                     }
                 }
@@ -219,193 +244,145 @@ fun DesktopLayout(
             return resolved
         }
 
-        // 1. Identify Apps from XML "first-screen"
-        val firstScreenFoundApps = resolveXmlItems(config.firstScreen)
-
-        // 2. Identify Second screen apps (Region specific via XML packages/types)
-        val secondScreenApps = resolveXmlItems(config.secondScreen)
-
-        // 3. User selected apps
+        val usedPackageNames = mutableSetOf<String>()
+        val firstScreenFoundApps = resolveXmlItems(config.firstScreen, usedPackageNames)
+        val secondScreenApps = resolveXmlItems(config.secondScreen, usedPackageNames)
         val userSelectedApps = allApps.filter { it.packageName in settings.selectedApps && it.packageName !in usedPackageNames }
 
-        // Construct Pages
         val finalPages = mutableListOf<List<GridItem>>()
-
         val rowCount = settings.layoutRows - 1
         val colCount = settings.layoutCols
-
-        // PAGE 0: Contact Shortcuts
-        val totalSpeedDials = rowCount * colCount
-        val page0SpeedDials = (0 until totalSpeedDials).map { GridItem.SpeedDial(it) }
-        finalPages.add(page0SpeedDials)
-
-        // PAGE 1: First Screen Apps from XML
-        val appsOnFirstPage = (rowCount - 1) * colCount
-        val firstPageList = if (settings.isBasicMode) {
-            // In basic mode, prioritize the core apps on page 1
-            firstScreenFoundApps.take(appsOnFirstPage)
-        } else {
-            firstScreenFoundApps.take(appsOnFirstPage)
-        }
-        finalPages.add(firstPageList.map { GridItem.App(it) })
-
-        // PAGE 2+: Designated apps (leftover first-screen, second-screen, and user-selected)
         val pageSize = rowCount * colCount
+
+        // Page 0: Notifications (Marker: SpeedDial with index -2)
+        if (settings.enableDesktopNotifications) {
+            finalPages.add((0 until pageSize).map { GridItem.SpeedDial(-2) })
+        }
+
+        // Page 1: Contacts
+        finalPages.add((0 until pageSize).map { GridItem.SpeedDial(it) })
+
+        // Page 2: Core Apps
+        val appsOnFirstPage = (rowCount - 1) * colCount
+        finalPages.add(firstScreenFoundApps.take(appsOnFirstPage).map { GridItem.App(it) })
+
+        // Remaining Apps
         val designatedApps = mutableListOf<GridItem>()
         if (firstScreenFoundApps.size > appsOnFirstPage) {
             designatedApps.addAll(firstScreenFoundApps.drop(appsOnFirstPage).map { GridItem.App(it) })
         }
         designatedApps.addAll(secondScreenApps.map { GridItem.App(it) })
         designatedApps.addAll(userSelectedApps.map { GridItem.App(it) })
-
         if (designatedApps.isNotEmpty()) {
             finalPages.addAll(designatedApps.chunked(pageSize))
         }
 
         val pagerState = rememberPagerState(
-            initialPage = 1,
+            initialPage = if (settings.enableDesktopNotifications) 2 else 1,
             pageCount = { finalPages.size }
         )
         val coroutineScope = rememberCoroutineScope()
 
         BackHandler {
-            if (pagerState.currentPage != 1) {
-                coroutineScope.launch {
-                    pagerState.animateScrollToPage(1)
-                }
+            val target = if (settings.enableDesktopNotifications) 2 else 1
+            if (pagerState.currentPage != target) {
+                coroutineScope.launch { pagerState.animateScrollToPage(target) }
             }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(insets)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(insets)) {
             Column(modifier = Modifier.fillMaxSize()) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.weight(1f)
-                ) { pageIndex ->
+                HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { pageIndex ->
                     val pageItems = finalPages[pageIndex]
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.Top
-                    ) {
+                    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Top) {
                         for (rowIndex in 0 until rowCount) {
                             Row(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(bottom = if (rowIndex < rowCount - 1) 16.dp else 0.dp),
+                                modifier = Modifier.weight(1f).padding(bottom = if (rowIndex < rowCount - 1) 16.dp else 0.dp),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                if (pageIndex == 1 && rowIndex == 0) {
-                                    // Integrated Widget on Page 1
+                                // Special case for Widget row on Core Apps page
+                                val coreAppsPageIndex = if (settings.enableDesktopNotifications) 2 else 1
+                                if (pageIndex == coreAppsPageIndex && rowIndex == 0) {
                                     if (!settings.isBasicMode) {
                                         ClockWidget(
-                                            weatherText = weatherText,
-                                            isWeatherAlert = isWeatherAlert,
-                                            locationCity = locationCity,
-                                            currentTemperature = currentTemperature,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .fillMaxHeight(),
-                                            onClick = {
-                                                val intent = Intent(context, WeatherActivity::class.java)
-                                                context.startActivity(intent)
-                                            },
+                                            weatherText = weatherText, isWeatherAlert = isWeatherAlert,
+                                            locationCity = locationCity, currentTemperature = currentTemperature,
+                                            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                                            fontSizeMultiplier = settings.fontSizeMultiplier,
+                                            onClick = { context.startActivity(Intent(context, WeatherActivity::class.java)) },
                                             onAddLocation = {
-                                                if (settings.usePasscode) {
-                                                    isAddingWeather = true
-                                                    showUnlockDialog = true
-                                                } else {
-                                                    showLocationSelectionDialog = true
-                                                }
+                                                if (settings.usePasscode) { isAddingWeather = true; showUnlockDialog = true }
+                                                else { showLocationSelectionDialog = true }
                                             }
                                         )
                                     } else {
-                                        // In Basic Mode, show simplified clock without weather
-                                        SimpleClockWidget(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .fillMaxHeight()
-                                        )
+                                        SimpleClockWidget(modifier = Modifier.fillMaxWidth().fillMaxHeight(), fontSizeMultiplier = settings.fontSizeMultiplier)
                                     }
                                 } else {
                                     for (colIndex in 0 until colCount) {
-                                        val itemIndex = calculateItemIndex(pageIndex, rowIndex, colIndex, colCount)
-
-                                        if (itemIndex >= 0 && itemIndex < pageItems.size) {
-                                            val item = pageItems[itemIndex]
-                                            Box(
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .fillMaxSize()
-                                            ) {
-                                                when (item) {
-                                                    is GridItem.App -> {
-                                                        DesktopItem(
-                                                            app = item.info,
-                                                            modifier = Modifier.fillMaxSize()
-                                                        ) {
-                                                            val isSettingsApp = firstScreenMap[AppType.SETTINGS]?.contains(item.info.packageName) == true
-                                                            val isCameraApp = firstScreenMap[AppType.CAMERA]?.contains(item.info.packageName) == true
-
-                                                            if (isSettingsApp) {
-                                                                if (settings.usePasscode) {
-                                                                    pendingApp = item.info
-                                                                    showUnlockDialog = true
-                                                                } else {
-                                                                    onAppLaunch(item.info)
-                                                                    context.startActivity(Intent(context, SettingsActivity::class.java))
-                                                                }
-                                                            } else if (item.info.packageName == context.packageName && firstScreenMap[AppType.WEATHER]?.contains(item.info.packageName) == true) {
-                                                                onAppLaunch(item.info)
-                                                                context.startActivity(Intent(context, WeatherActivity::class.java))
-                                                            } else if (isCameraApp) {
-                                                                onAppLaunch(item.info)
-                                                                AppUtils.launchCamera(context)
-                                                            } else {
-                                                                onAppLaunch(item.info)
-                                                                AppUtils.launchApp(context, item.info)
-                                                            }
+                                        val itemIndex = rowIndex * colCount + colIndex
+                                        if (itemIndex >= 0) {
+                                            val item = if (pageIndex == coreAppsPageIndex) {
+                                                pageItems.getOrNull(itemIndex - colCount)
+                                            } else {
+                                                pageItems.getOrNull(itemIndex)
+                                            }
+                                            
+                                            if (item != null) {
+                                                Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                                                    if (settings.enableDesktopNotifications && pageIndex == 0) {
+                                                        val notifications = NotificationRepository.activeNotifications
+                                                        if (itemIndex < notifications.size) {
+                                                            NotificationItem(notifications[itemIndex])
                                                         }
-                                                    }
-                                                    is GridItem.SpeedDial -> {
-                                                        SpeedDialItem(
-                                                            index = item.index,
-                                                            settings = settings,
-                                                            modifier = Modifier.fillMaxSize()
-                                                        ) {
-                                                            val contact = settings.getSpeedDial(item.index)
-                                                            if (contact == null) {
-                                                                if (settings.usePasscode) {
-                                                                    pendingSpeedDialIndex = item.index
-                                                                    showUnlockDialog = true
-                                                                } else {
-                                                                    editingSpeedDialIndex = item.index
-                                                                    showAddContactDialog = true
+                                                    } else {
+                                                        when (item) {
+                                                            is GridItem.App -> {
+                                                                DesktopItem(
+                                                                    app = item.info, modifier = Modifier.fillMaxSize(),
+                                                                    labelSize = labelSize, iconSizeMultiplier = settings.iconSizeMultiplier,
+                                                                    iconShape = settings.iconShape, colorFilter = highContrastFilter
+                                                                ) {
+                                                                    val isSettingsApp = firstScreenMap[AppType.SETTINGS]?.contains(item.info.packageName) == true
+                                                                    val isCameraApp = firstScreenMap[AppType.CAMERA]?.contains(item.info.packageName) == true
+                                                                    val isDialerApp = firstScreenMap[AppType.DIALER]?.contains(item.info.packageName) == true
+                                                                    val isContactsApp = firstScreenMap[AppType.CONTACTS]?.contains(item.info.packageName) == true
+
+                                                                    if (isSettingsApp) {
+                                                                        if (settings.usePasscode) { pendingApp = item.info; showUnlockDialog = true }
+                                                                        else { onAppLaunch(item.info); context.startActivity(Intent(context, SettingsActivity::class.java)) }
+                                                                    } else if (item.info.packageName == context.packageName && firstScreenMap[AppType.WEATHER]?.contains(item.info.packageName) == true) {
+                                                                        onAppLaunch(item.info); context.startActivity(Intent(context, WeatherActivity::class.java))
+                                                                    } else if (isCameraApp) { onAppLaunch(item.info); AppUtils.launchCamera(context) }
+                                                                    else if (isDialerApp) { onAppLaunch(item.info); AppUtils.launchDialer(context) }
+                                                                    else if (isContactsApp) { onAppLaunch(item.info); AppUtils.launchContacts(context) }
+                                                                    else { onAppLaunch(item.info); AppUtils.launchApp(context, item.info) }
                                                                 }
-                                                            } else {
-                                                                val name = contact.first
-                                                                val number = contact.second
-                                                                onSpeak(name)
-                                                                val intent = Intent(Intent.ACTION_CALL, "tel:$number".toUri())
-                                                                try {
-                                                                    context.startActivity(intent)
-                                                                } catch (_: Exception) {
-                                                                    val dialIntent = Intent(Intent.ACTION_DIAL, "tel:$number".toUri())
-                                                                    context.startActivity(dialIntent)
+                                                            }
+                                                            is GridItem.SpeedDial -> {
+                                                                SpeedDialItem(
+                                                                    index = item.index, settings = settings, modifier = Modifier.fillMaxSize(),
+                                                                    labelSize = labelSize, iconSizeMultiplier = settings.iconSizeMultiplier,
+                                                                    iconShape = settings.iconShape, colorFilter = highContrastFilter
+                                                                ) {
+                                                                    val contact = settings.getSpeedDial(item.index)
+                                                                    if (contact == null) {
+                                                                        if (settings.usePasscode) { pendingSpeedDialIndex = item.index; showUnlockDialog = true }
+                                                                        else { editingSpeedDialIndex = item.index; showAddContactDialog = true }
+                                                                    } else {
+                                                                        onSpeak(contact.first)
+                                                                        val dialIntent = Intent(Intent.ACTION_CALL, "tel:${contact.second}".toUri())
+                                                                        try { context.startActivity(dialIntent) }
+                                                                        catch (_: Exception) { context.startActivity(Intent(Intent.ACTION_DIAL, "tel:${contact.second}".toUri())) }
+                                                                    }
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
+                                            } else {
+                                                Spacer(modifier = Modifier.weight(1f))
                                             }
-                                        } else {
-                                            Spacer(modifier = Modifier.weight(1f))
                                         }
                                     }
                                 }
@@ -415,21 +392,10 @@ fun DesktopLayout(
                 }
 
                 if (finalPages.size > 1) {
-                    Row(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
+                    Row(modifier = Modifier.height(40.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         repeat(finalPages.size) { iteration ->
                             val color = if (pagerState.currentPage == iteration) Color.White else Color.White.copy(alpha = 0.5f)
-                            Box(
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .size(8.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(color)
-                            )
+                            Box(modifier = Modifier.padding(4.dp).size(8.dp).clip(RoundedCornerShape(4.dp)).background(color))
                         }
                     }
                 }
@@ -438,114 +404,83 @@ fun DesktopLayout(
             if (settings.showVoiceAssistant) {
                 FloatingActionButton(
                     onClick = {
-                        if (settings.voiceAssistantMode == 1) {
-                            onVoiceAssistant()
-                        } else {
-                            try {
-                                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                                    val prompt = context.getString(R.string.please_speak)
-                                    putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                }
-                                context.startActivity(intent)
-                            } catch (_: ActivityNotFoundException) {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    }
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {
-                                    try {
-                                        val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
-                                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                        }
-                                        context.startActivity(intent)
-                                    } catch (_: Exception) {
-                                        val errorMsg = context.getString(R.string.unable_to_start_voice_assistant)
-                                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            }
+                        if (settings.voiceAssistantMode == 1) { onVoiceAssistant() }
+                        else {
+                            AppUtils.launchSystemAssistant(context)
                         }
                     },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(
-                            bottom = navBarHeight + 16.dp,
-                            end = 16.dp
-                        ),
-                    containerColor = Color(0xFFFFD700), // High-visibility Gold/Yellow
-                    contentColor = Color.Black
-                ) {
-                    Icon(Icons.Default.Mic, contentDescription = stringResource(R.string.voice_assistant))
-                }
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = navBarHeight + 16.dp, end = 16.dp),
+                    containerColor = Color(0xFFFFD700), contentColor = Color.Black
+                ) { Icon(Icons.Default.Mic, contentDescription = stringResource(R.string.voice_assistant)) }
             }
 
             if (showUnlockDialog) {
                 UnlockDialog(
-                    settings = settings,
-                    pendingApp = pendingApp,
-                    pendingSpeedDialIndex = pendingSpeedDialIndex,
+                    settings = settings, pendingApp = pendingApp, pendingSpeedDialIndex = pendingSpeedDialIndex,
                     onUnlock = { app, index ->
-                        if (app != null) {
-                            onAppLaunch(app)
-                            context.startActivity(Intent(context, SettingsActivity::class.java))
-                        } else if (index != -1) {
-                            editingSpeedDialIndex = index
-                            showAddContactDialog = true
-                        } else if (isAddingWeather) {
-                            showLocationSelectionDialog = true
-                        } else {
-                            // Handle external trigger (e.g. voice command)
-                            context.startActivity(Intent(context, SettingsActivity::class.java))
-                        }
+                        if (app != null) { onAppLaunch(app); context.startActivity(Intent(context, SettingsActivity::class.java)) }
+                        else if (index != -1) { editingSpeedDialIndex = index; showAddContactDialog = true }
+                        else if (isAddingWeather) { showLocationSelectionDialog = true }
+                        else { context.startActivity(Intent(context, SettingsActivity::class.java)) }
                     },
-                    onDismiss = {
-                        showUnlockDialog = false
-                        pendingApp = null
-                        pendingSpeedDialIndex = -1
-                        isAddingWeather = false
-                    }
+                    onDismiss = { showUnlockDialog = false; pendingApp = null; pendingSpeedDialIndex = -1; isAddingWeather = false }
                 )
             }
 
             if (showLocationSelectionDialog) {
                 LocationSelectionDialog(
-                    settings = settings,
-                    onDismiss = {
-                        showLocationSelectionDialog = false
-                        isAddingWeather = false
-                    },
-                    onLocationAdded = {
-                        // Refresh weather or show toast
-                        onRefreshWeather()
-                        val msg = context.getString(R.string.location_added)
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    }
+                    settings = settings, onDismiss = { showLocationSelectionDialog = false; isAddingWeather = false },
+                    onLocationAdded = { onRefreshWeather(); Toast.makeText(context, context.getString(R.string.location_added), Toast.LENGTH_SHORT).show() }
                 )
             }
 
             if (showAddContactDialog) {
-                AddContactDialog(
-                    editingSpeedDialIndex = editingSpeedDialIndex,
-                    settings = settings,
-                    onDismiss = {
-                        showAddContactDialog = false
-                        editingSpeedDialIndex = -1
-                    }
-                )
+                AddContactDialog(editingSpeedDialIndex = editingSpeedDialIndex, settings = settings, onDismiss = { showAddContactDialog = false; editingSpeedDialIndex = -1 })
             }
         }
     }
 }
 
-private fun calculateItemIndex(pageIndex: Int, rowIndex: Int, colIndex: Int, colCount: Int): Int {
-    return when (pageIndex) {
-        0 -> rowIndex * colCount + colIndex
-        1 -> (rowIndex - 1) * colCount + colIndex
-        else -> rowIndex * colCount + colIndex
+@Composable
+fun NotificationItem(sbn: StatusBarNotification) {
+    val context = LocalContext.current
+    val appName = remember(sbn.packageName) {
+        try {
+            val pm = context.packageManager
+            pm.getApplicationLabel(pm.getApplicationInfo(sbn.packageName, 0)).toString()
+        } catch (_: Exception) {
+            sbn.packageName
+        }
+    }
+    val extras = sbn.notification.extras
+    val title = extras.getString("android.title") ?: ""
+    val text = extras.getCharSequence("android.text")?.toString() ?: ""
+    val icon = sbn.notification.smallIcon ?: sbn.notification.getLargeIcon()
+
+    Card(
+        modifier = Modifier.fillMaxSize().clickable {
+            try { sbn.notification.contentIntent?.send() } catch (_: Exception) {}
+        },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            if (icon != null) {
+                AsyncImage(
+                    model = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp)
+                )
+            } else {
+                Icon(Icons.Default.Notifications, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.White)
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = appName, fontSize = 14.sp, color = Color.White.copy(alpha = 0.6f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            Text(text = text, fontSize = 16.sp, color = Color.White.copy(alpha = 0.8f), maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+        }
     }
 }
 
@@ -568,7 +503,6 @@ private fun parseDesktopConfig(context: Context, xmlId: Int): DesktopConfig {
                         } else if (pkg != null) {
                             DesktopXmlItem.Package(pkg)
                         } else null
-
                         if (item != null) {
                             if (currentTag == "first-screen") firstScreen.add(item)
                             else if (currentTag == "second-screen") secondScreen.add(item)

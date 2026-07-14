@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -170,6 +171,26 @@ fun WeatherDetailScreen(result: WeatherUtils.WeatherResult?) {
             CircularProgressIndicator(color = Color.White)
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = stringResource(R.string.loading), color = Color.White)
+        }
+    } else if (result.errorMessage != null) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = Color.Red,
+                modifier = Modifier.size(64.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.weather_error, result.errorMessage),
+                color = Color.White,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                fontSize = 20.sp
+            )
         }
     } else {
         LazyColumn(

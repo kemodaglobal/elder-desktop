@@ -7,10 +7,12 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,9 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.elderdesktop.model.AppInfo
 import com.elderdesktop.ui.DesktopLayout
 import com.elderdesktop.ui.theme.ElderDesktopTheme
+import com.elderdesktop.util.DeepSeekUtils
+import com.elderdesktop.util.GoogleAiUtils
+import com.elderdesktop.util.OpenAiUtils
 import com.elderdesktop.util.WeatherUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,12 +81,19 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
     private fun handleVoiceCommand(command: String) {
         val context = this
+        val cameraKeywords = getString(R.string.keyword_camera).split(",")
+        val settingsKeywords = getString(R.string.keyword_settings).split(",")
+        val weatherKeywords = getString(R.string.keyword_weather).split(",")
+        val callKeywords = getString(R.string.keyword_call).split(",")
+        val contactKeywords = getString(R.string.keyword_contacts).split(",")
+        val callPrefixes = getString(R.string.keyword_call_prefix).split(",")
+
         when {
-            command.contains("相机") || command.contains("拍照") || command.contains("camera") -> {
+            cameraKeywords.any { command.contains(it) } -> {
                 speak(getString(R.string.opening_camera))
                 com.elderdesktop.util.AppUtils.launchCamera(context)
             }
-            command.contains("设置") || command.contains("settings") -> {
+            settingsKeywords.any { command.contains(it) } -> {
                 val settings = DesktopSettings(context)
                 if (settings.usePasscode) {
                     speak(getString(R.string.please_unlock_first))
@@ -90,17 +103,97 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                     startActivity(Intent(context, SettingsActivity::class.java))
                 }
             }
-            command.contains("天气") || command.contains("weather") -> {
+            weatherKeywords.any { command.contains(it) } -> {
                 speak(getString(R.string.opening_weather))
                 startActivity(Intent(context, WeatherActivity::class.java))
             }
-            command.contains("打电话") || command.contains("拨号") || command.contains("call") -> {
-                speak(getString(R.string.opening_phone))
-                val dialerIntent = Intent(Intent.ACTION_DIAL)
-                startActivity(dialerIntent)
+            contactKeywords.any { command.contains(it) && !callKeywords.any { c -> command.contains(c) } } -> {
+                speak(getString(R.string.opening_phone)) // Re-using opening_phone or add opening_contacts
+                com.elderdesktop.util.AppUtils.launchContacts(context)
+            }
+            callKeywords.any { command.contains(it) } -> {
+                val settings = DesktopSettings(context)
+                var targetName = ""
+                
+                for (pattern in callPrefixes) {
+                    if (command.contains(pattern)) {
+                        // Handle "Call [Name]"
+                        val after = command.substringAfter(pattern).trim()
+                        if (after.isNotEmpty()) {
+                            targetName = after
+                            break
+                        }
+                        // Handle "[Name] Call" (for Japanese/Korean suffix-like patterns)
+                        val before = command.substringBefore(pattern).trim()
+                        if (before.isNotEmpty()) {
+                            targetName = before
+                            break
+                        }
+                    }
+                }
+
+                if (targetName.isNotEmpty()) {
+                    var foundNumber: String? = null
+                    // Iterate through all possible speed dial slots
+                    for (i in 0 until 30) {
+                        val contact = settings.getSpeedDial(i)
+                        if (contact != null && contact.first.lowercase() == targetName) {
+                            foundNumber = contact.second
+                            break
+                        }
+                    }
+
+                    if (foundNumber != null) {
+                        speak(getString(R.string.calling_name, targetName))
+                        val intent = Intent(Intent.ACTION_CALL, "tel:$foundNumber".toUri())
+                        try {
+                            startActivity(intent)
+                        } catch (_: Exception) {
+                            // Fallback to dialer if CALL_PHONE permission is missing
+                            val dialIntent = Intent(Intent.ACTION_DIAL, "tel:$foundNumber".toUri())
+                            startActivity(dialIntent)
+                        }
+                    } else {
+                        speak(getString(R.string.contact_not_found, targetName))
+                    }
+                } else {
+                    speak(getString(R.string.opening_phone))
+                    com.elderdesktop.util.AppUtils.launchDialer(context)
+                }
             }
             else -> {
-                speak(getString(R.string.command_not_recognized, command))
+                val settings = DesktopSettings(context)
+                if (settings.enableDeepSeek) {
+                    speak(getString(R.string.loading))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val reply = when (settings.aiProvider) {
+                            "openai" -> OpenAiUtils.chat(
+                                prompt = command,
+                                apiKey = settings.openAiApiKey,
+                                client = client
+                            )
+                            "google" -> GoogleAiUtils.chat(
+                                prompt = command,
+                                apiKey = settings.googleAiApiKey,
+                                client = client
+                            )
+                            else -> DeepSeekUtils.chat(
+                                prompt = command,
+                                apiKey = settings.deepSeekApiKey,
+                                client = client
+                            )
+                        }
+                        withContext(Dispatchers.Main) {
+                            if (reply != null) {
+                                speak(reply)
+                            } else {
+                                speak(getString(R.string.command_not_recognized, command))
+                            }
+                        }
+                    }
+                } else {
+                    speak(getString(R.string.command_not_recognized, command))
+                }
             }
         }
     }
@@ -123,6 +216,13 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     @SuppressLint("SourceLockedOrientation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Runtime check for unauthorized Advertising SDKs (Enforcing open-source policy)
+        if (hasAdvertisingSDK()) {
+            Toast.makeText(this, "Unauthorized Advertising SDK detected. Please use the original open-source version.", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
 
         val isLargeScreen = resources.configuration.smallestScreenWidthDp >= 600
         // Lock to portrait only on small screens (phones)
@@ -160,11 +260,49 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateWakeLock()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        releaseWakeLock()
+    }
+
     override fun onDestroy() {
         weatherJob?.cancel()
         tts?.stop()
         tts?.shutdown()
+        releaseWakeLock()
         super.onDestroy()
+    }
+
+    private fun updateWakeLock() {
+        val settings = DesktopSettings(this)
+        if (settings.preventSleep) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                setShowWhenLocked(true)
+                setTurnScreenOn(true)
+            } else {
+                @Suppress("DEPRECATION")
+                window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+            }
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                setShowWhenLocked(false)
+                setTurnScreenOn(false)
+            } else {
+                @Suppress("DEPRECATION")
+                window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+            }
+        }
+    }
+
+    private fun releaseWakeLock() {
+        // Flags are managed automatically by the window lifecycle
     }
 
     private fun checkLocationPermissions() {
@@ -245,8 +383,11 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                         client = client
                     )
 
-                    if (result != null) {
-                        withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
+                        if (result.errorMessage != null) {
+                            weatherText = result.errorMessage
+                            isWeatherAlert = true
+                        } else {
                             weatherText = result.description
                             locationCity = result.cityName
                             isWeatherAlert = result.isAlert
@@ -269,8 +410,11 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                     client = client
                 )
 
-                if (result != null) {
-                    withContext(Dispatchers.Main) {
+                withContext(Dispatchers.Main) {
+                    if (result.errorMessage != null) {
+                        weatherText = result.errorMessage
+                        isWeatherAlert = true
+                    } else {
                         weatherText = result.description
                         locationCity = result.cityName
                         isWeatherAlert = result.isAlert
@@ -292,7 +436,30 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private fun speak(text: String) {
         val settings = DesktopSettings(this)
         if (settings.voiceAnnouncements) {
+            tts?.setSpeechRate(settings.speechRate)
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
         }
+    }
+
+    private fun hasAdvertisingSDK(): Boolean {
+        val adClasses = listOf(
+            "com.google.android.gms.ads.AdView",
+            "com.unity3d.ads.UnityAds",
+            "com.applovin.sdk.AppLovinSdk",
+            "com.mbridge.msdk.out.MBridgeSDKFactory",
+            "com.facebook.ads.AdView",
+            "com.bytedance.sdk.openadsdk.TTAdSdk", // Pangle
+            "com.vungle.warren.Vungle"
+        )
+        for (className in adClasses) {
+            try {
+                Class.forName(className)
+                Log.e("ElderDesktop", "CRITICAL: Unauthorized Advertising SDK detected: $className")
+                return true
+            } catch (_: ClassNotFoundException) {
+                // Class not present, which is good
+            }
+        }
+        return false
     }
 }

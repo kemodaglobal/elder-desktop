@@ -1,6 +1,7 @@
 package com.elderdesktop.ui
 
 import android.content.Intent
+import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,19 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,9 +31,53 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.core.text.HtmlCompat
 import com.elderdesktop.DesktopSettings
 import com.elderdesktop.R
 import com.elderdesktop.model.AppInfo
+
+@Composable
+fun PrivacyAgreementDialog(
+    settings: DesktopSettings,
+    onAccept: () -> Unit,
+    onDecline: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { /* Prevent dismissal without action */ },
+        title = { Text(stringResource(R.string.privacy_agreement_title)) },
+        text = {
+            Column {
+                Text(stringResource(R.string.privacy_agreement_desc))
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(modifier = Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
+                    Text(
+                        text = HtmlCompat.fromHtml(
+                            stringResource(R.string.privacy_policy_content),
+                            HtmlCompat.FROM_HTML_MODE_COMPACT
+                        ).toString(),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                settings.privacyAccepted = true
+                onAccept()
+            }) {
+                Text(stringResource(R.string.agree))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDecline) {
+                Text(stringResource(R.string.decline))
+            }
+        }
+    )
+}
 
 @Composable
 fun UnlockDialog(
@@ -187,6 +221,43 @@ fun AddContactDialog(
         }
     )
 
+    val contactPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickContact(),
+        onResult = { uri ->
+            uri?.let { contactUri ->
+                val projection = arrayOf(
+                    ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts._ID
+                )
+                context.contentResolver.query(contactUri, projection, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                        val idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID)
+                        name = if (nameIndex >= 0) cursor.getString(nameIndex) else ""
+                        val id = if (idIndex >= 0) cursor.getString(idIndex) else ""
+
+                        if (id.isNotEmpty()) {
+                            val phoneProjection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                            val phoneSelection = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?"
+                            context.contentResolver.query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                phoneProjection,
+                                phoneSelection,
+                                arrayOf(id),
+                                null
+                            )?.use { phoneCursor ->
+                                if (phoneCursor.moveToFirst()) {
+                                    val numberIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                                    number = if (numberIndex >= 0) phoneCursor.getString(numberIndex) else ""
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.add_contact)) },
@@ -229,6 +300,15 @@ fun AddContactDialog(
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 8.dp)
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { contactPickerLauncher.launch(null) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.import_contacts))
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

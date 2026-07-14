@@ -16,6 +16,7 @@
     <string name="voice_assistant_engine">内置语音引擎</string>
     <string name="voice_assistant_engine_desc">根据语音指令直接执行操作</string>
     <string name="voice_announcements">语音播报</string>
+    <string name="speech_rate">语速</string>
     <string name="basic_mode">基础模式</string>
     <string name="basic_mode_desc">适用于无互联网用户的简单模式</string>
     <string name="peace_of_mind_lock">安心锁</string>
@@ -35,6 +36,7 @@
     <string name="voice_assistant">语音助手</string>
     <string name="system_settings">系统设置</string>
     <string name="add_contact">添加联系人</string>
+    <string name="import_contacts">从通讯录导入</string>
     <string name="name">姓名</string>
     <string name="phone_number">电话号码</string>
     <string name="edit_contact">编辑联系人</string>
@@ -43,6 +45,8 @@
     <string name="select_apps">选择要显示在主屏幕上的应用</string>
     <string name="apps">应用</string>
     <string name="weather">天气</string>
+    <string name="weather_provider">天气提供商</string>
+    <string name="weather_api_key">天气 API 密钥</string>
     <string name="loading">加载中…</string>
     <string name="weather_alert">天气预警！</string>
     <string name="c">--°C</string>
@@ -55,6 +59,12 @@
     <string name="weather_rain_showers">阵雨</string>
     <string name="weather_thunderstorm">雷阵雨</string>
     <string name="weather_cloudy">阴</string>
+    <string name="weather_error">天气错误: %1$s</string>
+    <string name="weather_error_auth">身份验证失败 (请检查 API 密钥)</string>
+    <string name="weather_error_limit">请求过于频繁</string>
+    <string name="weather_error_network">网络错误</string>
+    <string name="weather_error_server">服务器错误</string>
+    <string name="weather_error_no_data">未收到数据</string>
     <string name="add_location">添加地点</string>
     <string name="select_location">选择地点</string>
     <string name="province">省份</string>
@@ -71,12 +81,81 @@
     <string name="voice_not_supported">您的设备不支持语音识别</string>
     <string name="please_speak">请说话</string>
     <string name="unable_to_start_voice_assistant">无法启动语音助手</string>
+    <string name="desktop_notifications">桌面通知</string>
+    <string name="desktop_notifications_desc">在主屏幕上显示收到的通知</string>
+    <string name="prevent_sleep">防止进入休眠</string>
+    <string name="prevent_sleep_desc">桌面活动时保持屏幕常亮</string>
+    <string name="deepseek_chat">DeepSeek 对话</string>
+    <string name="deepseek_chat_desc">通过语音与 DeepSeek AI 对话</string>
+    <string name="deepseek_api_key">DeepSeek API 密钥</string>
+    <string name="openai_api_key">OpenAI API 密钥</string>
+    <string name="google_ai_api_key">Google AI API 密钥</string>
+    <string name="enter_api_key">输入 API 密钥</string>
+    <string name="ai_provider">AI 提供商</string>
+    <string name="ai_chat">AI 对话</string>
+    <string name="ai_chat_desc">通过语音与 AI 助手对话</string>
+    <string name="notification_permission_required">需要通知访问权限</string>
+    <string name="notification_permission_desc">为了在桌面上显示通知，请在系统通知设置中启用“长辈桌面”。</string>
+    <string name="overlay_permission_required">需要悬浮窗权限</string>
+    <string name="overlay_permission_desc">为了在其他应用上显示通知，请授予“在其他应用上层显示”权限。</string>
+    <string name="grant_permission">授予权限</string>
     <string name="location_added">已添加地点</string>
     <string name="no_manual_locations">未添加手动地点</string>
+    <string name="calling_name">正在拨打 %1$s</string>
+    <string name="contact_not_found">未找到联系人 %1$s</string>
+    <string name="font_size">字体大小</string>
+    <string name="icon_size">图标大小</string>
+    <string name="icon_shape">图标形状</string>
+    <string name="shape_rounded">圆角</string>
+    <string name="shape_circle">圆形</string>
+    <string name="shape_square">正方形</string>
+    <string name="shape_native">系统默认</string>
+    <string name="high_contrast">高对比度</string>
+    <string name="theme_selection">主题风格</string>
+    <string name="theme_classic">经典蓝</string>
+    <string name="theme_emerald">翡翠绿</string>
+    <string name="theme_rose">玫瑰红</string>
+    <string name="theme_orange">温暖橙</string>
+    <string name="theme_high_contrast">高对比黑</string>
+    <string name="font_selection">字体样式</string>
+    <string name="font_default">系统默认</string>
+    <string name="font_serif">衬线体 (端庄)</string>
+    <string name="font_monospace">等宽体 (整洁)</string>
+    <string name="about">关于</string>
+    <string name="about_desc">查看版本和构建信息</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="privacy_agreement_title">隐私政策协议</string>
+    <string name="privacy_agreement_desc">为了提供基本的桌面服务，我们需要某些权限。在继续之前，请阅读并同意我们的隐私政策。</string>
+    <string name="agree">同意</string>
+    <string name="decline">拒绝</string>
+    <string name="privacy_policy_content">
+        &lt;b&gt;长辈桌面隐私政策&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
+        您的隐私对我们至关重要。本政策解释了我们如何处理您的数据。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;1. 数据收集：&lt;/b&gt; 我们不会收集您的个人信息，也不会将其上传到任何第三方服务器。所有设置和联系人均本地存储在您的设备上。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;2. 权限使用：&lt;/b&gt;&lt;br/&gt;
+        - &lt;b&gt;位置信息：&lt;/b&gt; 仅用于获取您所在区域的天气数据。&lt;br/&gt;
+        - &lt;b&gt;联系人：&lt;/b&gt; 用于显示快捷拨号和导入联系人信息。&lt;br/&gt;
+        - &lt;b&gt;通知权限：&lt;/b&gt; 用于在桌面上显示您收到的消息通知。&lt;br/&gt;
+        - &lt;b&gt;照片/媒体：&lt;/b&gt; 仅用于设置联系人头像。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;3. 无广告：&lt;/b&gt; 本应用严格非商业化，不含任何广告 SDK。&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;4. 开源透明：&lt;/b&gt; 您可以通过在 GitHub/GitLab 上查看源代码来验证我们的数据处理逻辑。
+    </string>
+    <string name="version_label">版本: %1$s (%2$s)</string>
+    <string name="build_time_label">构建时间: %1$s</string>
+    <string name="view_github">在 GitHub 上查看</string>
+    <string name="view_gitlab">在 GitLab 上查看</string>
+    <string name="designed_with_love">用爱为长辈设计。</string>
+    <string name="open_source_notice">本软件开源且免费。严禁嵌入任何广告 SDK。</string>
     <string name="time_midnight">半夜</string>
     <string name="time_dawn">凌晨</string>
     <string name="time_morning">上午</string>
     <string name="time_noon">中午</string>
     <string name="time_afternoon">下午</string>
     <string name="time_evening">晚上</string>
+    <string name="keyword_camera">相机,拍照,camera</string>
+    <string name="keyword_settings">设置,桌面设置,settings</string>
+    <string name="keyword_weather">天气,weather</string>
+    <string name="keyword_call">打电话,拨号,call</string>
+    <string name="keyword_call_prefix">打电话给,拨号给</string>
+    <string name="keyword_contacts">联系人,contacts</string>
 </resources>

@@ -16,6 +16,7 @@
     <string name="voice_assistant_engine">Integrierte Sprach-Engine</string>
     <string name="voice_assistant_engine_desc">Aktionen direkt basierend auf Eingabe ausführen</string>
     <string name="voice_announcements">Sprachansagen</string>
+    <string name="speech_rate">Sprachgeschwindigkeit</string>
     <string name="basic_mode">Einfacher Modus</string>
     <string name="basic_mode_desc">Einfacher Modus für Benutzer ohne Internet</string>
     <string name="peace_of_mind_lock">Sicherheitssperre</string>
@@ -35,6 +36,7 @@
     <string name="voice_assistant">Sprachassistent</string>
     <string name="system_settings">Systemeinstellungen</string>
     <string name="add_contact">Kontakt hinzufügen</string>
+    <string name="import_contacts">Aus Kontakten importieren</string>
     <string name="name">Name</string>
     <string name="phone_number">Telefonnummer</string>
     <string name="edit_contact">Kontakt bearbeiten</string>
@@ -43,6 +45,8 @@
     <string name="select_apps">Apps für den Startbildschirm auswählen</string>
     <string name="apps">Apps</string>
     <string name="weather">Wetter</string>
+    <string name="weather_provider">Wetteranbieter</string>
+    <string name="weather_api_key">Wetter-API-Schlüssel</string>
     <string name="loading">Laden…</string>
     <string name="weather_alert">Wetterwarnung!</string>
     <string name="c">--°C</string>
@@ -55,6 +59,12 @@
     <string name="weather_rain_showers">Regenschauer</string>
     <string name="weather_thunderstorm">Gewitter</string>
     <string name="weather_cloudy">Bewölkt</string>
+    <string name="weather_error">Wetterfehler: %1$s</string>
+    <string name="weather_error_auth">Authentifizierung fehlgeschlagen (API-Schlüssel prüfen)</string>
+    <string name="weather_error_limit">Ratenlimit überschritten</string>
+    <string name="weather_error_network">Netzwerkfehler</string>
+    <string name="weather_error_server">Serverfehler</string>
+    <string name="weather_error_no_data">Keine Daten empfangen</string>
     <string name="add_location">Standort hinzufügen</string>
     <string name="select_location">Standort wählen</string>
     <string name="province">Bundesland/Provinz</string>
@@ -71,12 +81,81 @@
     <string name="voice_not_supported">Spracherkennung wird auf Ihrem Gerät nicht unterstützt</string>
     <string name="please_speak">Bitte sprechen</string>
     <string name="unable_to_start_voice_assistant">Sprachassistent konnte nicht gestartet werden</string>
+    <string name="desktop_notifications">Desktop-Benachrichtigungen</string>
+    <string name="desktop_notifications_desc">Eingehende Benachrichtigungen auf dem Startbildschirm anzeigen</string>
+    <string name="prevent_sleep">Schlafmodus verhindern</string>
+    <string name="prevent_sleep_desc">Bildschirm eingeschaltet lassen, während der Desktop aktiv ist</string>
+    <string name="deepseek_chat">DeepSeek Chat</string>
+    <string name="deepseek_chat_desc">Mit DeepSeek AI per Sprache chatten</string>
+    <string name="deepseek_api_key">DeepSeek API-Schlüssel</string>
+    <string name="google_ai_api_key">Google AI API-Schlüssel</string>
+    <string name="enter_api_key">API-Schlüssel eingeben</string>
+    <string name="ai_chat_desc">Per Sprache mit dem KI-Assistenten chatten</string>
+    <string name="notification_permission_required">Benachrichtigungszugriff erforderlich</string>
+    <string name="notification_permission_desc">Um Benachrichtigungen auf dem Desktop anzuzeigen, aktivieren Sie bitte „Senioren-Desktop“ in den System-Benachrichtigungseinstellungen.</string>
+    <string name="overlay_permission_required">Überlagerungsberechtigung erforderlich</string>
+    <string name="overlay_permission_desc">Um Benachrichtigungen über anderen Apps anzuzeigen, gewähren Sie bitte die Berechtigung „Über anderen Apps einblenden“.</string>
+    <string name="grant_permission">Berechtigung erteilen</string>
     <string name="location_added">Standort hinzugefügt</string>
     <string name="no_manual_locations">Keine manuellen Standorte hinzugefügt</string>
+    <string name="calling_name">%1$s wird angerufen…</string>
+    <string name="contact_not_found">Kontakt %1$s nicht gefunden</string>
+    <string name="font_size">Schriftgröße</string>
+    <string name="icon_size">Symbolgröße</string>
+    <string name="icon_shape">Symbolform</string>
+    <string name="shape_rounded">Abgerundet</string>
+    <string name="shape_circle">Kreis</string>
+    <string name="shape_square">Quadrat</string>
+    <string name="shape_native">Systemstandard</string>
+    <string name="high_contrast">Hoher Kontrast</string>
+    <string name="theme_selection">Design-Stil</string>
+    <string name="theme_classic">Klassisches Blau</string>
+    <string name="theme_emerald">Smaragdgrün</string>
+    <string name="theme_rose">Rosenrot</string>
+    <string name="theme_orange">Warmes Orange</string>
+    <string name="theme_high_contrast">Hoher Kontrast Schwarz</string>
+    <string name="font_selection">Schriftstil</string>
+    <string name="font_default">Systemstandard</string>
+    <string name="font_serif">Serife (Formal)</string>
+    <string name="font_monospace">Monospace (Klar)</string>
+    <string name="about">Über</string>
+    <string name="about_desc">Version und Build-Informationen anzeigen</string>
+    <string name="privacy_policy">Datenschutzerklärung</string>
+    <string name="privacy_agreement_title">Zustimmung zur Datenschutzerklärung</string>
+    <string name="privacy_agreement_desc">Um grundlegende Launcher-Dienste bereitzustellen, benötigen wir bestimmte Berechtigungen. Bitte lesen und akzeptieren Sie unsere Datenschutzerklärung, bevor Sie fortfahren.</string>
+    <string name="agree">Zustimmen</string>
+    <string name="decline">Ablehnen</string>
+    <string name="privacy_policy_content">
+        &lt;b&gt;Elder Desktop Datenschutzerklärung&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
+        Ihre Privatsphäre ist uns wichtig. Diese Richtlinie erklärt, wie wir mit Ihren Daten umgehen.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;1. Datenerfassung:&lt;/b&gt; Wir sammeln oder laden keine persönlichen Informationen auf Server von Drittanbietern hoch. Alle Einstellungen und Kontakte werden lokal auf Ihrem Gerät gespeichert.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;2. Berechtigungen:&lt;/b&gt;&lt;br/&gt;
+        - &lt;b&gt;Standort:&lt;/b&gt; Wird nur verwendet, um Wetterdaten für Ihre Region abzurufen.&lt;br/&gt;
+        - &lt;b&gt;Kontakte:&lt;/b&gt; Wird verwendet, um Kurzwahl-Verknüpfungen anzuzeigen und Kontaktinformationen zu importieren.&lt;br/&gt;
+        - &lt;b&gt;Benachrichtigungen:&lt;/b&gt; Wird verwendet, um Ihre eingehenden Nachrichten auf dem Desktop anzuzeigen.&lt;br/&gt;
+        - &lt;b&gt;Fotos:&lt;/b&gt; Wird nur zum Festlegen von Kontaktprofilbildern verwendet.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;3. Keine Werbung:&lt;/b&gt; Diese App ist strikt nicht-kommerziell und enthält keine Werbe-SDKs.&lt;br/&gt;&lt;br/&gt;
+        &lt;b&gt;4. Open Source:&lt;/b&gt; Sie können unsere Datenverarbeitungslogik überprüfen, indem Sie unseren Quellcode auf GitHub/GitLab einsehen.
+    </string>
+    <string name="version_label">Version: %1$s (%2$s)</string>
+    <string name="build_time_label">Build-Zeit: %1$s</string>
+    <string name="view_github">Auf GitHub anzeigen</string>
+    <string name="view_gitlab">Auf GitLab anzeigen</string>
+    <string name="designed_with_love">Mit Liebe für Senioren entwickelt.</string>
+    <string name="open_source_notice">Diese Software ist Open-Source und kostenlos. Die Einbindung von Werbe-SDKs ist streng untersagt.</string>
     <string name="time_midnight">Mitternacht</string>
     <string name="time_dawn">Morgengrauen</string>
     <string name="time_morning">Vormittag</string>
     <string name="time_noon">Mittag</string>
     <string name="time_afternoon">Nachmittag</string>
     <string name="time_evening">Abend</string>
+    <string name="keyword_camera">Kamera,Foto,camera</string>
+    <string name="keyword_settings">Einstellungen,setup,settings</string>
+    <string name="keyword_weather">Wetter,weather</string>
+    <string name="keyword_call">anrufen,wählen,call</string>
+    <string name="keyword_call_prefix">rufe an </string>
+    <string name="keyword_contacts">Kontakte,contacts</string>
+    <string name="openai_api_key">OpenAI-API-Schlüssel</string>
+    <string name="ai_provider">KI-Anbieter</string>
+    <string name="ai_chat">KI-Chat</string>
 </resources>

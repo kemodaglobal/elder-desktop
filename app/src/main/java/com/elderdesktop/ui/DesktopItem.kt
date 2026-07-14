@@ -23,12 +23,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
@@ -42,8 +46,15 @@ import com.elderdesktop.model.AppInfo
 fun DesktopItem(
     app: AppInfo,
     modifier: Modifier = Modifier,
+    labelSize: TextUnit = 22.sp,
+    iconSizeMultiplier: Float = 1.0f,
+    iconShape: String = "rounded",
+    colorFilter: ColorFilter? = null,
     onClick: () -> Unit
 ) {
+    val shape = getIconShape(iconShape)
+    val iconSize = 80.dp * iconSizeMultiplier
+
     Card(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
@@ -60,12 +71,16 @@ fun DesktopItem(
             Image(
                 bitmap = app.icon.toBitmap().asImageBitmap(),
                 contentDescription = null,
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier
+                    .size(iconSize)
+                    .clip(shape),
+                colorFilter = colorFilter,
+                contentScale = ContentScale.Fit
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = app.label,
-                fontSize = 22.sp,
+                fontSize = labelSize,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 textAlign = TextAlign.Center,
@@ -81,11 +96,17 @@ fun SpeedDialItem(
     index: Int,
     settings: DesktopSettings,
     modifier: Modifier = Modifier,
+    labelSize: TextUnit = 22.sp,
+    iconSizeMultiplier: Float = 1.0f,
+    iconShape: String = "rounded",
+    colorFilter: ColorFilter? = null,
     onClick: () -> Unit
 ) {
     val contact = settings.getSpeedDial(index)
     val backgroundColor = if (contact == null) Color(0xFF1A5F7A) else Color(0xFF2ECC71)
-    
+    val shape = getIconShape(iconShape)
+    val iconSize = 80.dp * iconSizeMultiplier
+
     Card(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
@@ -103,13 +124,15 @@ fun SpeedDialItem(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    modifier = Modifier.size(80.dp),
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clip(shape),
                     tint = Color.White.copy(alpha = 0.6f)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = stringResource(R.string.add_contact),
-                    fontSize = 20.sp,
+                    fontSize = 20.sp * (labelSize.value / 22f),
                     fontWeight = FontWeight.Bold,
                     color = Color.White.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center
@@ -121,22 +144,25 @@ fun SpeedDialItem(
                         model = photoUri.toUri(),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
+                            .size(iconSize)
+                            .clip(shape),
+                        contentScale = ContentScale.Crop,
+                        colorFilter = colorFilter
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(80.dp),
+                        modifier = Modifier
+                            .size(iconSize)
+                            .clip(shape),
                         tint = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = contact.first,
-                    fontSize = 22.sp,
+                    fontSize = labelSize,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center,
@@ -145,5 +171,14 @@ fun SpeedDialItem(
                 )
             }
         }
+    }
+}
+
+private fun getIconShape(shape: String): Shape {
+    return when (shape) {
+        "circle" -> CircleShape
+        "square" -> RectangleShape
+        "native" -> RectangleShape // Native often means unclipped or system-clipped
+        else -> RoundedCornerShape(16.dp)
     }
 }

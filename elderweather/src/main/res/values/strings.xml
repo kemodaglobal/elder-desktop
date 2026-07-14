@@ -15,4 +15,10 @@
     <string name="weather_rain_showers">Rain showers</string>
     <string name="weather_thunderstorm">Thunderstorm</string>
     <string name="weather_cloudy">Cloudy</string>
+    <string name="weather_error">Weather error: %1$s</string>
+    <string name="weather_error_auth">Authentication failed</string>
+    <string name="weather_error_limit">Rate limit exceeded</string>
+    <string name="weather_error_network">Network error</string>
+    <string name="weather_error_server">Server error</string>
+    <string name="weather_error_no_data">No data received</string>
 </resources>

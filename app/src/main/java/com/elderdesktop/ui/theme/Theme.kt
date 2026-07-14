@@ -1,57 +1,64 @@
 package com.elderdesktop.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xfffffbfe),
-    surface = Color(0xfffffbfe),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
+import androidx.compose.ui.text.font.FontFamily
+import com.elderdesktop.DesktopSettings
 
 @Composable
 fun ElderDesktopTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Disabled by default for better theme consistency
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val context = LocalContext.current
+    val settings = DesktopSettings(context)
+    
+    val primaryColor = when (settings.themeChoice) {
+        "emerald" -> EmeraldGreen
+        "rose" -> RoseRed
+        "orange" -> WarmOrange
+        "high_contrast" -> Color.Black
+        else -> ClassicBlue
+    }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val colorScheme = if (settings.themeChoice == "high_contrast") {
+        darkColorScheme(
+            primary = Color.White,
+            onPrimary = Color.Black,
+            background = Color.Black,
+            onBackground = Color.White,
+            surface = Color.Black,
+            onSurface = Color.White
+        )
+    } else if (darkTheme) {
+        darkColorScheme(
+            primary = primaryColor,
+            secondary = primaryColor.copy(alpha = 0.7f),
+            tertiary = primaryColor.copy(alpha = 0.5f)
+        )
+    } else {
+        lightColorScheme(
+            primary = primaryColor,
+            secondary = primaryColor.copy(alpha = 0.7f),
+            tertiary = primaryColor.copy(alpha = 0.5f)
+        )
+    }
+
+    val fontFamily = when (settings.fontChoice) {
+        "serif" -> FontFamily.Serif
+        "monospace" -> FontFamily.Monospace
+        else -> FontFamily.Default
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = getTypography(fontFamily),
         content = content
     )
 }

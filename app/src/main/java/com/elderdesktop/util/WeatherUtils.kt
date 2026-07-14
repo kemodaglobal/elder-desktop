@@ -59,14 +59,38 @@ object WeatherUtils {
         val isAlert: Boolean,
         val formattedTemp: String,
         val forecast: List<ForecastItem> = emptyList(),
-        val weatherCode: Int = 0
+        val weatherCode: Int = 0,
+        val errorMessage: String? = null
     )
 
     suspend fun fetchWeather(
         location: Location,
         context: Context,
         client: OkHttpClient
-    ): WeatherResult? {
+    ): WeatherResult {
+        val settings = com.elderdesktop.DesktopSettings(context)
+        return when (settings.weatherProvider) {
+            "qweather" -> {
+                if (settings.weatherApiKey.isEmpty()) return fetchWeatherOpenMeteo(location, context, client)
+                QWeatherUtils.fetchWeather(location, context, settings.weatherApiKey, client).let {
+                    if (it.cityName.isEmpty()) {
+                        it.copy(cityName = getCityName(context, location.latitude, location.longitude))
+                    } else it
+                }
+            }
+            "openweather" -> {
+                if (settings.weatherApiKey.isEmpty()) return fetchWeatherOpenMeteo(location, context, client)
+                OpenWeatherUtils.fetchWeather(location, context, settings.weatherApiKey, client)
+            }
+            else -> fetchWeatherOpenMeteo(location, context, client)
+        }
+    }
+
+    private suspend fun fetchWeatherOpenMeteo(
+        location: Location,
+        context: Context,
+        client: OkHttpClient
+    ): WeatherResult {
         return withContext(Dispatchers.IO) {
             try {
                 val url = "https://api.open-meteo.com/v1/forecast?" +
@@ -77,27 +101,38 @@ object WeatherUtils {
                 val response = client.newCall(request).execute()
                 
                 if (!response.isSuccessful) {
-                    when (response.code) {
-                        401, 403 -> Log.e("WeatherUtils", "Connection refused: ${response.code}")
-                        404 -> Log.e("WeatherUtils", "Weather data not found: 404")
-                        429 -> Log.e("WeatherUtils", "Too many requests: 429")
-                        500, 502 -> Log.e("WeatherUtils", "Server error: ${response.code}")
-                        else -> Log.e("WeatherUtils", "Unexpected error: ${response.code}")
+                    val errorResId = when (response.code) {
+                        401, 403 -> R.string.weather_error_auth
+                        429 -> R.string.weather_error_limit
+                        in 500..599 -> R.string.weather_error_server
+                        else -> R.string.weather_error_network
                     }
-                    return@withContext null
+                    return@withContext WeatherResult(
+                        description = "", cityName = "", isAlert = false, 
+                        formattedTemp = "", errorMessage = context.getString(errorResId)
+                    )
                 }
 
                 val body = response.body.string()
                 if (body.isEmpty()) {
-                    Log.e("WeatherUtils", "Empty response body")
-                    return@withContext null
+                    return@withContext WeatherResult(
+                        description = "", cityName = "", isAlert = false, 
+                        formattedTemp = "", errorMessage = context.getString(R.string.weather_error_no_data)
+                    )
                 }
 
                 run {
                     val json = JSONObject(body)
 
                     // Current weather
-                    val current = json.getJSONObject("current_weather")
+                    val current =
+                        json.optJSONObject("current_weather") ?: return@withContext WeatherResult(
+                            description = "",
+                            cityName = "",
+                            isAlert = false,
+                            formattedTemp = "",
+                            errorMessage = context.getString(R.string.weather_error_no_data)
+                        )
                     val temp = current.getDouble("temperature")
                     val code = current.getInt("weathercode")
 
@@ -109,29 +144,31 @@ object WeatherUtils {
                     val isAlert = isHighTemp || isHeavyRain
 
                     // Daily forecast
-                    val daily = json.getJSONObject("daily")
-                    val times = daily.getJSONArray("time")
-                    val dailyCodes = daily.getJSONArray("weathercode")
-                    val maxTemps = daily.getJSONArray("temperature_2m_max")
-                    val minTemps = daily.getJSONArray("temperature_2m_min")
-
+                    val daily = json.optJSONObject("daily")
                     val forecastList = mutableListOf<ForecastItem>()
-                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    val displayFormat = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
+                    if (daily != null) {
+                        val times = daily.getJSONArray("time")
+                        val dailyCodes = daily.getJSONArray("weathercode")
+                        val maxTemps = daily.getJSONArray("temperature_2m_max")
+                        val minTemps = daily.getJSONArray("temperature_2m_min")
 
-                    for (i in 0 until times.length()) {
-                        val dateStr = times.getString(i)
-                        val date = dateFormat.parse(dateStr)
-                        val formattedDate = if (date != null) displayFormat.format(date) else dateStr
+                        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        val displayFormat = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
 
-                        forecastList.add(
-                            ForecastItem(
-                                date = formattedDate,
-                                maxTemp = formatTemperature(maxTemps.getDouble(i)),
-                                minTemp = formatTemperature(minTemps.getDouble(i)),
-                                description = getWeatherDescription(dailyCodes.getInt(i), context)
+                        for (i in 0 until times.length()) {
+                            val dateStr = times.getString(i)
+                            val date = dateFormat.parse(dateStr)
+                            val formattedDate = if (date != null) displayFormat.format(date) else dateStr
+
+                            forecastList.add(
+                                ForecastItem(
+                                    date = formattedDate,
+                                    maxTemp = formatTemperature(maxTemps.getDouble(i)),
+                                    minTemp = formatTemperature(minTemps.getDouble(i)),
+                                    description = getWeatherDescription(dailyCodes.getInt(i), context)
+                                )
                             )
-                        )
+                        }
                     }
 
                     // 获取城市名
@@ -139,15 +176,12 @@ object WeatherUtils {
 
                     WeatherResult(description, cityName, isAlert, formattedTemp, forecastList, code)
                 }
-            } catch (e: java.net.SocketTimeoutException) {
-                Log.e("WeatherUtils", "Connection timeout", e)
-                null
-            } catch (e: java.io.IOException) {
-                Log.e("WeatherUtils", "Network error", e)
-                null
+            } catch (_: java.net.SocketTimeoutException) {
+                WeatherResult("", "", false, "", errorMessage = context.getString(R.string.weather_error_network))
+            } catch (_: java.io.IOException) {
+                WeatherResult("", "", false, "", errorMessage = context.getString(R.string.weather_error_network))
             } catch (e: Exception) {
-                Log.e("WeatherUtils", "Error fetching weather", e)
-                null
+                WeatherResult("", "", false, "", errorMessage = e.localizedMessage)
             }
         }
     }
@@ -156,12 +190,12 @@ object WeatherUtils {
         cityName: String,
         context: Context,
         client: OkHttpClient
-    ): WeatherResult? {
+    ): WeatherResult {
         val location = getLocationFromCityName(context, cityName)
         return if (location != null) {
             fetchWeather(location, context, client)
         } else {
-            null
+            WeatherResult("", "", false, "", errorMessage = "City not found")
         }
     }
 

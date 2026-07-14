@@ -50,6 +50,7 @@ fun ClockWidget(
     locationCity: String = "",
     currentTemperature: String = "",
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
+    fontSizeMultiplier: Float = 1.0f,
     onClick: () -> Unit = {},
     onAddLocation: () -> Unit = {}
 ) {
@@ -104,20 +105,20 @@ fun ClockWidget(
                     if (locationCity.isNotEmpty()) {
                         Text(
                             text = locationCity,
-                            fontSize = 14.sp,
+                            fontSize = 14.sp * fontSizeMultiplier,
                             fontWeight = FontWeight.Medium,
                             color = Color.White.copy(alpha = 0.9f)
                         )
                     }
                     Text(
                         text = "$marker $hour12:$minute",
-                        fontSize = 28.sp,
+                        fontSize = 28.sp * fontSizeMultiplier,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                     Text(
                         text = dateString,
-                        fontSize = 12.sp,
+                        fontSize = 12.sp * fontSizeMultiplier,
                         color = Color.White
                     )
                     if (currentTemperature.isNotEmpty() || weatherText.isNotEmpty()) {
@@ -127,7 +128,7 @@ fun ClockWidget(
                         ).joinToString(" ")
                         Text(
                             text = weatherDisplay,
-                            fontSize = if (isWeatherAlert) 18.sp else 14.sp,
+                            fontSize = (if (isWeatherAlert) 18.sp else 14.sp) * fontSizeMultiplier,
                             fontWeight = if (isWeatherAlert) FontWeight.Bold else FontWeight.Normal,
                             color = if (isWeatherAlert) Color.Red else Color.White,
                             modifier = Modifier.padding(top = 4.dp)
@@ -148,7 +149,8 @@ fun ClockWidget(
 @SuppressLint("DefaultLocale")
 @Composable
 fun SimpleClockWidget(
-    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
+    fontSizeMultiplier: Float = 1.0f
 ) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
 
@@ -183,13 +185,13 @@ fun SimpleClockWidget(
         ) {
             Text(
                 text = "$marker $hour12:$minute",
-                fontSize = 40.sp,
+                fontSize = 40.sp * fontSizeMultiplier,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             Text(
                 text = dateString,
-                fontSize = 18.sp,
+                fontSize = 18.sp * fontSizeMultiplier,
                 color = Color.White
             )
         }
