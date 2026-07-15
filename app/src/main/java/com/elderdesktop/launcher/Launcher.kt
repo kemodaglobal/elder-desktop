@@ -1,4 +1,4 @@
-package com.elderdesktop
+package com.elderdesktop.launcher
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -21,13 +21,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import com.elderdesktop.DesktopSettings
+import com.elderdesktop.R
+import com.elderdesktop.SettingsActivity
+import com.elderdesktop.WeatherActivity
 import com.elderdesktop.model.AppInfo
 import com.elderdesktop.ui.DesktopLayout
 import com.elderdesktop.ui.theme.ElderDesktopTheme
@@ -44,7 +48,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
-class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
+class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
 
     private var tts: TextToSpeech? = null
 
@@ -53,6 +57,7 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private var isWeatherAlert by mutableStateOf(false)
     private var locationCity by mutableStateOf("")
     private var currentTemperature by mutableStateOf("")
+    private var weatherCode by mutableIntStateOf(800) // Default clear
 
     private var triggerSettingsUnlock by mutableStateOf(false)
 
@@ -114,7 +119,7 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             callKeywords.any { command.contains(it) } -> {
                 val settings = DesktopSettings(context)
                 var targetName = ""
-                
+
                 for (pattern in callPrefixes) {
                     if (command.contains(pattern)) {
                         // Handle "Call [Name]"
@@ -230,31 +235,32 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         if (!isLargeScreen) {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-        
+
         tts = TextToSpeech(this, this)
-        
+
         enableEdgeToEdge()
-        
+
         checkLocationPermissions()
-        
+
         setContent {
             ElderDesktopTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.Transparent
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.background
                 ) {
-                        DesktopLayout(
-                            onAppLaunch = { app: AppInfo -> speak(app.label) },
-                            onSpeak = { text: String -> speak(text) },
-                            onVoiceAssistant = { startVoiceEngine() },
-                            weatherText = weatherText,
-                            isWeatherAlert = isWeatherAlert,
-                            locationCity = locationCity,
-                            currentTemperature = currentTemperature,
-                            triggerSettingsUnlock = triggerSettingsUnlock,
-                            onSettingsUnlockHandled = { triggerSettingsUnlock = false },
-                            onRefreshWeather = { updateWeather() }
-                        )
+                    DesktopLayout(
+                        onAppLaunch = { app: AppInfo -> speak(app.label) },
+                        onSpeak = { text: String -> speak(text) },
+                        onVoiceAssistant = { startVoiceEngine() },
+                        weatherText = weatherText,
+                        isWeatherAlert = isWeatherAlert,
+                        locationCity = locationCity,
+                        currentTemperature = currentTemperature,
+                        weatherCode = weatherCode,
+                        triggerSettingsUnlock = triggerSettingsUnlock,
+                        onSettingsUnlockHandled = { triggerSettingsUnlock = false },
+                        onRefreshWeather = { updateWeather() }
+                    )
                 }
             }
         }
@@ -346,7 +352,7 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         val providers = locationManager.getProviders(true)
 
         if (providers.isEmpty()) {
-            Log.w("DesktopActivity", "No location providers available")
+            Log.w("Launcher", "No location providers available")
             return
         }
 
@@ -364,7 +370,7 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         if (currentBest != null) {
             fetchWeatherForLocation(currentBest)
         } else {
-            Log.w("DesktopActivity", "Could not determine last known location, trying manual locations")
+            Log.w("Launcher", "Could not determine last known location, trying manual locations")
             fetchWeatherForManualLocations()
         }
     }
@@ -379,7 +385,7 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                 try {
                     val result = WeatherUtils.fetchWeatherForCity(
                         cityName = firstLocation,
-                        context = this@DesktopActivity,
+                        context = this@Launcher,
                         client = client
                     )
 
@@ -392,10 +398,11 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                             locationCity = result.cityName
                             isWeatherAlert = result.isAlert
                             currentTemperature = result.formattedTemp
+                            weatherCode = result.weatherCode
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e("DesktopActivity", "Error updating weather for manual location", e)
+                    Log.e("Launcher", "Error updating weather for manual location", e)
                 }
             }
         }
@@ -406,7 +413,7 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             try {
                 val result = WeatherUtils.fetchWeather(
                     location = location,
-                    context = this@DesktopActivity,
+                    context = this@Launcher,
                     client = client
                 )
 
@@ -419,10 +426,11 @@ class DesktopActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                         locationCity = result.cityName
                         isWeatherAlert = result.isAlert
                         currentTemperature = result.formattedTemp
+                        weatherCode = result.weatherCode
                     }
                 }
             } catch (e: Exception) {
-                Log.e("DesktopActivity", "Error updating weather", e)
+                Log.e("Launcher", "Error updating weather", e)
             }
         }
     }

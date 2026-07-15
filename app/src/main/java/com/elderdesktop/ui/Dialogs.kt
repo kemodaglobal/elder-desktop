@@ -1,7 +1,10 @@
 package com.elderdesktop.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.provider.ContactsContract
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import androidx.compose.foundation.layout.heightIn
@@ -225,35 +229,51 @@ fun AddContactDialog(
         contract = ActivityResultContracts.PickContact(),
         onResult = { uri ->
             uri?.let { contactUri ->
-                val projection = arrayOf(
-                    ContactsContract.Contacts.DISPLAY_NAME,
-                    ContactsContract.Contacts._ID
-                )
-                context.contentResolver.query(contactUri, projection, null, null, null)?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-                        val idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID)
-                        name = if (nameIndex >= 0) cursor.getString(nameIndex) else ""
-                        val id = if (idIndex >= 0) cursor.getString(idIndex) else ""
+                try {
+                    val projection = arrayOf(
+                        ContactsContract.Contacts.DISPLAY_NAME,
+                        ContactsContract.Contacts._ID
+                    )
+                    context.contentResolver.query(contactUri, projection, null, null, null)?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                            val idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID)
+                            name = if (nameIndex >= 0) cursor.getString(nameIndex) else ""
+                            val id = if (idIndex >= 0) cursor.getString(idIndex) else ""
 
-                        if (id.isNotEmpty()) {
-                            val phoneProjection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                            val phoneSelection = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?"
-                            context.contentResolver.query(
-                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                                phoneProjection,
-                                phoneSelection,
-                                arrayOf(id),
-                                null
-                            )?.use { phoneCursor ->
-                                if (phoneCursor.moveToFirst()) {
-                                    val numberIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                                    number = if (numberIndex >= 0) phoneCursor.getString(numberIndex) else ""
+                            if (id.isNotEmpty()) {
+                                val phoneProjection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                                val phoneSelection = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?"
+                                context.contentResolver.query(
+                                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                    phoneProjection,
+                                    phoneSelection,
+                                    arrayOf(id),
+                                    null
+                                )?.use { phoneCursor ->
+                                    if (phoneCursor.moveToFirst()) {
+                                        val numberIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                                        number = if (numberIndex >= 0) phoneCursor.getString(numberIndex) else ""
+                                    }
                                 }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("AddContactDialog", "Error querying contact", e)
+                    Toast.makeText(context, R.string.weather_error_network, Toast.LENGTH_SHORT).show() // Using a generic error string for now or better add a specific one
                 }
+            }
+        }
+    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                contactPickerLauncher.launch(null)
+            } else {
+                Toast.makeText(context, R.string.permission_required, Toast.LENGTH_SHORT).show()
             }
         }
     )
@@ -304,7 +324,16 @@ fun AddContactDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { contactPickerLauncher.launch(null) },
+                    onClick = {
+                        when (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)) {
+                            PackageManager.PERMISSION_GRANTED -> {
+                                contactPickerLauncher.launch(null)
+                            }
+                            else -> {
+                                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.import_contacts))

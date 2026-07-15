@@ -6,25 +6,29 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-fun getTypography(fontFamily: FontFamily): Typography {
+fun getTypography(fontFamily: FontFamily, isHighContrast: Boolean = false): Typography {
+    val weightNormal = if (isHighContrast) FontWeight.Bold else FontWeight.Normal
+    val weightMedium = if (isHighContrast) FontWeight.ExtraBold else FontWeight.Medium
+    val weightBold = if (isHighContrast) FontWeight.Black else FontWeight.Bold
+
     return Typography(
         bodyLarge = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Normal,
+            fontWeight = weightNormal,
             fontSize = 16.sp,
             lineHeight = 24.sp,
             letterSpacing = 0.5.sp
         ),
         titleLarge = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Bold,
+            fontWeight = weightBold,
             fontSize = 22.sp,
             lineHeight = 28.sp,
             letterSpacing = 0.sp
         ),
         labelSmall = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Medium,
+            fontWeight = weightMedium,
             fontSize = 11.sp,
             lineHeight = 16.sp,
             letterSpacing = 0.5.sp

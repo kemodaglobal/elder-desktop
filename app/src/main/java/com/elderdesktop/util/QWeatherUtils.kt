@@ -46,6 +46,7 @@ object QWeatherUtils {
                             val now = json.getJSONObject("now")
                             val temp = now.getDouble("temp")
                             val text = now.getString("text")
+                            val iconCode = now.optString("icon", "100").toIntOrNull() ?: 100
                             
                             // Forecast for alerts (simple implementation)
                             val isHighTemp = temp >= 35
@@ -56,7 +57,7 @@ object QWeatherUtils {
                                 cityName = "", // City name resolved in WeatherUtils
                                 isAlert = isAlert,
                                 formattedTemp = WeatherUtils.formatTemperature(temp),
-                                weatherCode = 0 // QWeather uses text or specific icon codes
+                                weatherCode = iconCode
                             )
                         } else {
                             val errorMsg = when (code) {

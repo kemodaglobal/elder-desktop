@@ -27,14 +27,21 @@ fun ElderDesktopTheme(
         else -> ClassicBlue
     }
 
-    val colorScheme = if (settings.themeChoice == "high_contrast") {
+    val isHighContrast = settings.themeChoice == "high_contrast" || settings.highContrastMode
+
+    val colorScheme = if (isHighContrast) {
         darkColorScheme(
             primary = Color.White,
             onPrimary = Color.Black,
+            secondary = Color.White,
+            onSecondary = Color.Black,
             background = Color.Black,
             onBackground = Color.White,
             surface = Color.Black,
-            onSurface = Color.White
+            onSurface = Color.White,
+            surfaceVariant = Color.Black,
+            onSurfaceVariant = Color.White,
+            outline = Color.White
         )
     } else if (darkTheme) {
         darkColorScheme(
@@ -58,7 +65,7 @@ fun ElderDesktopTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = getTypography(fontFamily),
+        typography = getTypography(fontFamily, isHighContrast),
         content = content
     )
 }

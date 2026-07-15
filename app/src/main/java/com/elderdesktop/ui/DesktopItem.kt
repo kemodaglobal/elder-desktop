@@ -1,6 +1,7 @@
 package com.elderdesktop.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -54,11 +56,20 @@ fun DesktopItem(
 ) {
     val shape = getIconShape(iconShape)
     val iconSize = 80.dp * iconSizeMultiplier
+    val isHighContrast = MaterialTheme.colorScheme.surface == Color.Black
 
     Card(
-        modifier = modifier.clickable { onClick() },
+        modifier = modifier
+            .clickable { onClick() }
+            .then(
+                if (isHighContrast) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(24.dp))
+                else Modifier
+            ),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = app.backgroundColor.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isHighContrast) MaterialTheme.colorScheme.surface 
+                             else app.backgroundColor.copy(alpha = 0.9f)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
@@ -82,7 +93,7 @@ fun DesktopItem(
                 text = app.label,
                 fontSize = labelSize,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -103,12 +114,20 @@ fun SpeedDialItem(
     onClick: () -> Unit
 ) {
     val contact = settings.getSpeedDial(index)
-    val backgroundColor = if (contact == null) Color(0xFF1A5F7A) else Color(0xFF2ECC71)
+    val isHighContrast = MaterialTheme.colorScheme.surface == Color.Black
+    val backgroundColor = if (isHighContrast) MaterialTheme.colorScheme.surface
+                         else if (contact == null) Color(0xFF1A5F7A) 
+                         else Color(0xFF2ECC71)
     val shape = getIconShape(iconShape)
     val iconSize = 80.dp * iconSizeMultiplier
 
     Card(
-        modifier = modifier.clickable { onClick() },
+        modifier = modifier
+            .clickable { onClick() }
+            .then(
+                if (isHighContrast) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(24.dp))
+                else Modifier
+            ),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor.copy(alpha = 0.9f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -127,14 +146,14 @@ fun SpeedDialItem(
                     modifier = Modifier
                         .size(iconSize)
                         .clip(shape),
-                    tint = Color.White.copy(alpha = 0.6f)
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = stringResource(R.string.add_contact),
                     fontSize = 20.sp * (labelSize.value / 22f),
                     fontWeight = FontWeight.Bold,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center
                 )
             } else {
@@ -156,7 +175,7 @@ fun SpeedDialItem(
                         modifier = Modifier
                             .size(iconSize)
                             .clip(shape),
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -164,7 +183,7 @@ fun SpeedDialItem(
                     text = contact.first,
                     fontSize = labelSize,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

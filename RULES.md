@@ -10,7 +10,7 @@ The goal is to ensure a consistent user experience across old and new Android ph
 2. **Arbitrary modification of minSdk and targetSdk is prohibited.**： 
    - See `build.gradle.kts` for the original minSdk / targetSdk values. 
    - Do not lower the `minSdk`, and do not arbitrarily change the `targetSdk` to circumvent system behaviors (such as permissions or background restrictions). 
-   - This project uses Gradle version 9.6.1, Android Gradle Plugin version 9.2.1, and targetSdk 37; therefore, development requires Android Studio Quail 1 or a later version. 
+   - This project uses Gradle version 9.6.1, Android Gradle Plugin version 9.3.0, and targetSdk 37; therefore, development requires Android Studio Quail 2 or a later version. 
 3. **Obligation to disclose compatibility information**：If the `targetSdk` of this open-source software must be adjusted, the impact on new devices must be detailed in the `targetSdk` documentation. 
 4. **Independent Security for "Peace of Mind Lock"**: If fingerprint recognition is implemented for settings protection, it must not utilize the fingerprints enrolled for the system screen lock. It should maintain an independent authentication path for family members.
 5. **Mobile Phone Exclusivity**: This software is designed and optimized for mobile phones and foldable devices. Support for smartwatches (Wear OS) is explicitly excluded to maintain UI simplicity and senior-focused usability.

@@ -91,6 +91,7 @@ fun DesktopLayout(
     isWeatherAlert: Boolean,
     locationCity: String = "",
     currentTemperature: String = "",
+    weatherCode: Int = 800,
     triggerSettingsUnlock: Boolean = false,
     onSettingsUnlockHandled: () -> Unit = {},
     onRefreshWeather: () -> Unit = {}
@@ -104,13 +105,15 @@ fun DesktopLayout(
     var settingsVersion by remember { mutableIntStateOf(0) }
     val settings = remember(settingsVersion) { DesktopSettings(context) }
 
-    val highContrastFilter = if (settings.highContrastMode) {
+    val isHighContrast = settings.themeChoice == "high_contrast" || settings.highContrastMode
+
+    val highContrastFilter = if (isHighContrast) {
         androidx.compose.ui.graphics.ColorFilter.colorMatrix(
             androidx.compose.ui.graphics.ColorMatrix(
                 floatArrayOf(
-                    1.5f, 0f, 0f, 0f, -64f,
-                    0f, 1.5f, 0f, 0f, -64f,
-                    0f, 0f, 1.5f, 0f, -64f,
+                    2f, 0f, 0f, 0f, -100f,
+                    0f, 2f, 0f, 0f, -100f,
+                    0f, 0f, 2f, 0f, -100f,
                     0f, 0f, 0f, 1f, 0f
                 )
             )
@@ -290,7 +293,12 @@ fun DesktopLayout(
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize().padding(insets)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(androidx.compose.material3.MaterialTheme.colorScheme.background)
+                .padding(insets)
+        ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { pageIndex ->
                     val pageItems = finalPages[pageIndex]
@@ -307,6 +315,7 @@ fun DesktopLayout(
                                         ClockWidget(
                                             weatherText = weatherText, isWeatherAlert = isWeatherAlert,
                                             locationCity = locationCity, currentTemperature = currentTemperature,
+                                            weatherCode = weatherCode,
                                             modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                                             fontSizeMultiplier = settings.fontSizeMultiplier,
                                             onClick = { context.startActivity(Intent(context, WeatherActivity::class.java)) },
@@ -316,7 +325,11 @@ fun DesktopLayout(
                                             }
                                         )
                                     } else {
-                                        SimpleClockWidget(modifier = Modifier.fillMaxWidth().fillMaxHeight(), fontSizeMultiplier = settings.fontSizeMultiplier)
+                                        SimpleClockWidget(
+                                            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                                            fontSizeMultiplier = settings.fontSizeMultiplier,
+                                            weatherCode = weatherCode
+                                        )
                                     }
                                 } else {
                                     for (colIndex in 0 until colCount) {

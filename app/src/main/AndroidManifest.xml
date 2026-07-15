@@ -39,7 +39,7 @@
             android:value="false" />
 
         <activity
-            android:name=".DesktopActivity"
+            android:name=".launcher.Launcher"
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="unspecified"

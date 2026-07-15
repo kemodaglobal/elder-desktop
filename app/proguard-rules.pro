@@ -1,6 +1,6 @@
 # ====== Launcher 核心入口必须保留 ======
 # Home Activity 及其中 public 无参构造、onCreate 等生命周期不被混淆删除
--keep public class com.elderdesktop.DesktopActivity { *; }
+-keep public class com.elderdesktop.launcher.Launcher { *; }
 -keep public class * extends android.app.Activity { *; }
 -keep public class * extends android.app.Application { *; }
 -keep public class * extends android.content.BroadcastReceiver { *; }

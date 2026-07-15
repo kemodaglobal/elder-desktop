@@ -18,6 +18,35 @@ import kotlin.coroutines.resume
 
 object WeatherUtils {
 
+    enum class WeatherType {
+        CLEAR, CLOUDY, RAIN, SNOW, ATMOSPHERE, UNKNOWN
+    }
+
+    fun getWeatherType(code: Int): WeatherType {
+        return when (code) {
+            // Priority: OpenWeatherMap standard (as requested)
+            800, 801, 802 -> WeatherType.CLEAR
+            803, 804 -> WeatherType.CLOUDY
+            in 200..299 -> WeatherType.RAIN
+            in 300..399 -> WeatherType.RAIN
+            in 500..599 -> WeatherType.RAIN
+            in 600..699 -> WeatherType.SNOW
+            in 700..799 -> WeatherType.ATMOSPHERE
+
+            // Open-Meteo codes (0-99)
+            0, 1, 2, 3 -> WeatherType.CLEAR
+            in 51..65, in 80..82, in 95..99 -> WeatherType.RAIN
+            in 71..75 -> WeatherType.SNOW
+            45, 48 -> WeatherType.ATMOSPHERE
+            
+            // QWeather specific overrides (1xx, etc.)
+            100, 101, 102, 103, 150 -> WeatherType.CLEAR
+            104 -> WeatherType.CLOUDY
+            
+            else -> WeatherType.UNKNOWN
+        }
+    }
+
     fun getWeatherDescription(code: Int, context: Context): String {
         val resId = when (code) {
             0 -> R.string.weather_clear

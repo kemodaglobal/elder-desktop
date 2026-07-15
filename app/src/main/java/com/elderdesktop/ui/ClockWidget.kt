@@ -2,6 +2,7 @@ package com.elderdesktop.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,10 +15,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Grain
+import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +55,7 @@ fun ClockWidget(
     isWeatherAlert: Boolean,
     locationCity: String = "",
     currentTemperature: String = "",
+    weatherCode: Int = 800,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
     fontSizeMultiplier: Float = 1.0f,
     onClick: () -> Unit = {},
@@ -72,11 +79,32 @@ fun ClockWidget(
     val marker = getTimeOfDayMarker(context, locale, hour24)
 
     val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
+    val isHighContrast = MaterialTheme.colorScheme.surface == Color.Black
+
+    val isDay = hour24 in 6..18
+    val weatherType = com.elderdesktop.util.WeatherUtils.getWeatherType(weatherCode)
+
+    val widgetBackgroundColor = if (isHighContrast) MaterialTheme.colorScheme.surface
+    else when (weatherType) {
+        com.elderdesktop.util.WeatherUtils.WeatherType.CLEAR -> if (isDay) Color(0xFF87CEEB) else Color(0xFF1A237E)
+        com.elderdesktop.util.WeatherUtils.WeatherType.CLOUDY,
+        com.elderdesktop.util.WeatherUtils.WeatherType.RAIN,
+        com.elderdesktop.util.WeatherUtils.WeatherType.SNOW,
+        com.elderdesktop.util.WeatherUtils.WeatherType.ATMOSPHERE -> if (isDay) Color(0xFFBDBDBD) else Color(0xFF424242)
+        else -> Color(0xFF1A5F7A)
+    }
 
     Card(
-        modifier = modifier.clickable { onClick() },
+        modifier = modifier
+            .clickable { onClick() }
+            .then(
+                if (isHighContrast) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+                else Modifier
+            ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f))
+        colors = CardDefaults.cardColors(
+            containerColor = widgetBackgroundColor.copy(alpha = 0.9f)
+        )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (weatherText.isEmpty() && currentTemperature.isEmpty()) {
@@ -89,7 +117,7 @@ fun ClockWidget(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = stringResource(R.string.add_location),
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -106,20 +134,21 @@ fun ClockWidget(
                         Text(
                             text = locationCity,
                             fontSize = 14.sp * fontSizeMultiplier,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White.copy(alpha = 0.9f)
+                            fontWeight = if (isHighContrast) FontWeight.Black else FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                         )
                     }
                     Text(
                         text = "$marker $hour12:$minute",
                         fontSize = 28.sp * fontSizeMultiplier,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontWeight = if (isHighContrast) FontWeight.Black else FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = dateString,
                         fontSize = 12.sp * fontSizeMultiplier,
-                        color = Color.White
+                        fontWeight = if (isHighContrast) FontWeight.Bold else FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     if (currentTemperature.isNotEmpty() || weatherText.isNotEmpty()) {
                         val weatherDisplay = listOfNotNull(
@@ -129,19 +158,52 @@ fun ClockWidget(
                         Text(
                             text = weatherDisplay,
                             fontSize = (if (isWeatherAlert) 18.sp else 14.sp) * fontSizeMultiplier,
-                            fontWeight = if (isWeatherAlert) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isWeatherAlert) Color.Red else Color.White,
+                            fontWeight = if (isWeatherAlert) FontWeight.Black else if (isHighContrast) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isWeatherAlert) (if (isHighContrast) Color.Yellow else Color.Red) else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(Color.Yellow)
-                )
+                        .size(60.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isHighContrast) {
+                        Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color.White))
+                    } else {
+                        WeatherIcon(weatherType, isDay)
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun WeatherIcon(type: com.elderdesktop.util.WeatherUtils.WeatherType, isDay: Boolean) {
+    when (type) {
+        com.elderdesktop.util.WeatherUtils.WeatherType.CLEAR -> {
+            if (isDay) {
+                Icon(Icons.Default.WbSunny, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.Yellow)
+            } else {
+                Icon(Icons.Default.NightsStay, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.White)
+            }
+        }
+        com.elderdesktop.util.WeatherUtils.WeatherType.CLOUDY -> {
+            Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.White)
+        }
+        com.elderdesktop.util.WeatherUtils.WeatherType.RAIN -> {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.DarkGray)
+                Icon(Icons.Default.Grain, contentDescription = null, modifier = Modifier.size(30.dp).padding(top = 20.dp), tint = Color.Cyan)
+            }
+        }
+        com.elderdesktop.util.WeatherUtils.WeatherType.SNOW -> {
+            Icon(Icons.Default.Grain, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.White)
+        }
+        else -> {
+            Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.Yellow))
         }
     }
 }
@@ -150,7 +212,8 @@ fun ClockWidget(
 @Composable
 fun SimpleClockWidget(
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
-    fontSizeMultiplier: Float = 1.0f
+    fontSizeMultiplier: Float = 1.0f,
+    weatherCode: Int = 800
 ) {
     var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
 
@@ -170,11 +233,31 @@ fun SimpleClockWidget(
     val marker = getTimeOfDayMarker(context, locale, hour24)
 
     val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
+    val isHighContrast = MaterialTheme.colorScheme.surface == Color.Black
+
+    val isDay = hour24 in 6..18
+    val weatherType = com.elderdesktop.util.WeatherUtils.getWeatherType(weatherCode)
+
+    val widgetBackgroundColor = if (isHighContrast) MaterialTheme.colorScheme.surface
+    else when (weatherType) {
+        com.elderdesktop.util.WeatherUtils.WeatherType.CLEAR -> if (isDay) Color(0xFF87CEEB) else Color(0xFF1A237E)
+        com.elderdesktop.util.WeatherUtils.WeatherType.CLOUDY,
+        com.elderdesktop.util.WeatherUtils.WeatherType.RAIN,
+        com.elderdesktop.util.WeatherUtils.WeatherType.SNOW,
+        com.elderdesktop.util.WeatherUtils.WeatherType.ATMOSPHERE -> if (isDay) Color(0xFFBDBDBD) else Color(0xFF424242)
+        else -> Color(0xFF1A5F7A)
+    }
 
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .then(
+                if (isHighContrast) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+                else Modifier
+            ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A5F7A).copy(alpha = 0.9f))
+        colors = CardDefaults.cardColors(
+            containerColor = widgetBackgroundColor.copy(alpha = 0.9f)
+        )
     ) {
         Column(
             modifier = Modifier
@@ -186,13 +269,14 @@ fun SimpleClockWidget(
             Text(
                 text = "$marker $hour12:$minute",
                 fontSize = 40.sp * fontSizeMultiplier,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = if (isHighContrast) FontWeight.Black else FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = dateString,
                 fontSize = 18.sp * fontSizeMultiplier,
-                color = Color.White
+                fontWeight = if (isHighContrast) FontWeight.Bold else FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

@@ -374,7 +374,7 @@ fun SettingsScreen() {
                             selectedApps = newSelected
                             settings.selectedApps = newSelected
                         }) {
-                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFE74C3C))
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -434,7 +434,7 @@ fun SettingsScreen() {
                                     settings.clearSpeedDial(i)
                                     speedDialUpdateTrigger++
                                 }) {
-                                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFE74C3C))
+                                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error)
                                 }
                             }
                         }
@@ -794,7 +794,7 @@ fun SettingsScreen() {
                             settings.removeWeatherLocation(loc)
                             speedDialUpdateTrigger++ // Reuse trigger to refresh
                         }) {
-                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color(0xFFE74C3C))
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -815,9 +815,14 @@ fun SettingsScreen() {
                 context.startActivity(Intent(Settings.ACTION_SETTINGS))
             },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67E22))
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (MaterialTheme.colorScheme.surface == Color.Black) Color.White 
+                                 else Color(0xFFE67E22),
+                contentColor = if (MaterialTheme.colorScheme.surface == Color.Black) Color.Black 
+                               else Color.White
+            )
         ) {
-            Text(stringResource(R.string.system_settings), color = Color.White)
+            Text(stringResource(R.string.system_settings))
         }
 
         Button(

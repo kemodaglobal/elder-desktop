@@ -43,6 +43,7 @@ object OpenWeatherUtils {
                         val temp = main.getDouble("temp")
                         val weather = json.getJSONArray("weather").getJSONObject(0)
                         val description = weather.getString("description")
+                        val weatherId = weather.getInt("id")
                         
                         val isHighTemp = temp >= 35
 
@@ -51,7 +52,7 @@ object OpenWeatherUtils {
                             cityName = json.getString("name"),
                             isAlert = isHighTemp,
                             formattedTemp = WeatherUtils.formatTemperature(temp),
-                            weatherCode = 0
+                            weatherCode = weatherId
                         )
                     }
                 } else {
