@@ -4,6 +4,7 @@
     <string name="desktop_settings">桌面设置</string>
     <string name="back">返回</string>
     <string name="layout">布局</string>
+    <string name="layout_auto">自动适应 (响应式)</string>
     <string name="layout_2x3">2 x 3 布局</string>
     <string name="layout_3x4">3 x 4 布局</string>
     <string name="layout_3x2">3 x 2 布局</string>
@@ -85,6 +86,10 @@
     <string name="desktop_notifications_desc">在主屏幕上显示收到的通知</string>
     <string name="prevent_sleep">防止进入休眠</string>
     <string name="prevent_sleep_desc">桌面活动时保持屏幕常亮</string>
+    <string name="accidental_touch_prevention">防误触模式</string>
+    <string name="accidental_touch_prevention_desc">在屏幕边缘添加保护区，防止意外误改系统设置或点击广告。该功能仅在本地运行，严禁收集或上传任何数据。</string>
+    <string name="accidental_touch_settings_title">防误触设置</string>
+    <string name="accidental_touch_privacy_notice">该功能需要无障碍服务以拦截边缘点击。我们郑重承诺：此服务仅用于创建保护层，绝不记录、上传或分享任何个人数据，亦不用于远程控制或隐私监视。</string>
     <string name="deepseek_chat">DeepSeek 对话</string>
     <string name="deepseek_chat_desc">通过语音与 DeepSeek AI 对话</string>
     <string name="deepseek_api_key">DeepSeek API 密钥</string>
@@ -136,7 +141,8 @@
         - &lt;b&gt;位置信息：&lt;/b&gt; 仅用于获取您所在区域的天气数据。&lt;br/&gt;
         - &lt;b&gt;联系人：&lt;/b&gt; 用于显示快捷拨号和导入联系人信息。&lt;br/&gt;
         - &lt;b&gt;通知权限：&lt;/b&gt; 用于在桌面上显示您收到的消息通知。&lt;br/&gt;
-        - &lt;b&gt;照片/媒体：&lt;/b&gt; 仅用于设置联系人头像。&lt;br/&gt;&lt;br/&gt;
+        - &lt;b&gt;照片/媒体：&lt;/b&gt; 仅用于设置联系人头像。&lt;br/&gt;
+        - &lt;b&gt;无障碍服务：&lt;/b&gt; 仅用于“防误触模式”以拦截边缘点击。我们郑重承诺：不收集数据、不用于远程控制或侵犯隐私。&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;3. 无广告：&lt;/b&gt; 本应用严格非商业化，不含任何广告 SDK。&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;4. 开源透明：&lt;/b&gt; 您可以通过在 GitHub/GitLab 上查看源代码来验证我们的数据处理逻辑。
     </string>

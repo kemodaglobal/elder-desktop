@@ -81,7 +81,9 @@ import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 
-@SuppressLint("SuspiciousIndentation", "LocalContextGetResourceValueCall")
+@SuppressLint("SuspiciousIndentation", "LocalContextGetResourceValueCall",
+    "ConfigurationScreenWidthHeight"
+)
 @Composable
 fun DesktopLayout(
     onAppLaunch: (AppInfo) -> Unit,
@@ -122,20 +124,38 @@ fun DesktopLayout(
 
     val labelSize = 22.sp * settings.fontSizeMultiplier
 
-    val config = remember(settings.is2x3) {
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isLargeScreen = configuration.smallestScreenWidthDp >= 600
+
+    val (rowCount, colCount) = remember(settingsVersion, configuration.screenWidthDp, configuration.screenHeightDp) {
+        if (settings.useAutoLayout) {
+            if (isLargeScreen) {
+                if (configuration.screenWidthDp > configuration.screenHeightDp) (4 to 6) else (5 to 4)
+            } else {
+                if (configuration.screenHeightDp > 800) (5 to 3) else (4 to 2)
+            }
+        } else {
+            (settings.layoutRows to settings.layoutCols)
+        }
+    }
+
+    val config = remember(rowCount, colCount) {
         val currentCountry = Locale.getDefault().country
-        val xmlId = if (settings.is2x3) {
+        val xmlId = if (colCount <= 2) {
             when (currentCountry) {
                 "CN" -> R.xml.desktop_2x3_china
                 "KP" -> R.xml.desktop_2x3_north_korea
                 else -> R.xml.desktop_2x3_global
             }
-        } else {
+        } else if (colCount == 3) {
             when (currentCountry) {
                 "CN" -> R.xml.desktop_3x4_china
                 "KP" -> R.xml.desktop_3x4_north_korea
                 else -> R.xml.desktop_3x4_global
             }
+        } else {
+            // Large screen layouts
+            R.xml.desktop_3x4_global // Defaulting to 3x4 config for now as 4x3/6x4 specific XMLs don't exist yet, but we'll use the grid logic
         }
         parseDesktopConfig(context, xmlId)
     }
@@ -253,9 +273,8 @@ fun DesktopLayout(
         val userSelectedApps = allApps.filter { it.packageName in settings.selectedApps && it.packageName !in usedPackageNames }
 
         val finalPages = mutableListOf<List<GridItem>>()
-        val rowCount = settings.layoutRows - 1
-        val colCount = settings.layoutCols
-        val pageSize = rowCount * colCount
+        val effectiveRows = rowCount - 1
+        val pageSize = effectiveRows * colCount
 
         // Page 0: Notifications (Marker: SpeedDial with index -2)
         if (settings.enableDesktopNotifications) {
@@ -266,7 +285,7 @@ fun DesktopLayout(
         finalPages.add((0 until pageSize).map { GridItem.SpeedDial(it) })
 
         // Page 2: Core Apps
-        val appsOnFirstPage = (rowCount - 1) * colCount
+        val appsOnFirstPage = (effectiveRows - 1) * colCount
         finalPages.add(firstScreenFoundApps.take(appsOnFirstPage).map { GridItem.App(it) })
 
         // Remaining Apps
@@ -296,16 +315,16 @@ fun DesktopLayout(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(androidx.compose.material3.MaterialTheme.colorScheme.background)
+                .background(if (isHighContrast) androidx.compose.material3.MaterialTheme.colorScheme.background else Color.Transparent)
                 .padding(insets)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { pageIndex ->
                     val pageItems = finalPages[pageIndex]
                     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Top) {
-                        for (rowIndex in 0 until rowCount) {
+                        for (rowIndex in 0 until effectiveRows) {
                             Row(
-                                modifier = Modifier.weight(1f).padding(bottom = if (rowIndex < rowCount - 1) 16.dp else 0.dp),
+                                modifier = Modifier.weight(1f).padding(bottom = if (rowIndex < effectiveRows - 1) 16.dp else 0.dp),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 // Special case for Widget row on Core Apps page

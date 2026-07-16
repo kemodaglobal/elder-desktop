@@ -3,6 +3,7 @@ package com.elderdesktop.settings
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -96,6 +98,8 @@ fun SettingsScreen() {
 
     var showNotificationPermissionDialog by remember { mutableStateOf(false) }
     var showOverlayPermissionDialog by remember { mutableStateOf(false) }
+    var showAccessibilityPermissionDialog by remember { mutableStateOf(false) }
+    var showUnlockForAccidentalTouch by remember { mutableStateOf(false) }
 
     fun isNotificationServiceEnabled(): Boolean {
         return NotificationManagerCompat.getEnabledListenerPackages(context)
@@ -160,6 +164,17 @@ fun SettingsScreen() {
         // ====== 1. 显示与布局 / Display & Layout ======
         Text(stringResource(R.string.layout), style = MaterialTheme.typography.titleLarge)
         
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(
+                selected = settings.useAutoLayout,
+                onClick = {
+                    settings.useAutoLayout = true
+                    speedDialUpdateTrigger++
+                }
+            )
+            Text(stringResource(R.string.layout_auto), modifier = Modifier.padding(start = 8.dp))
+        }
+
         val configuration = LocalConfiguration.current
         val sw = configuration.smallestScreenWidthDp
         
@@ -167,8 +182,9 @@ fun SettingsScreen() {
         if (sw < 600) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
-                    selected = settings.is2x3,
+                    selected = !settings.useAutoLayout && settings.is2x3,
                     onClick = {
+                        settings.useAutoLayout = false
                         settings.use2x3()
                         speedDialUpdateTrigger++
                     }
@@ -178,8 +194,9 @@ fun SettingsScreen() {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
-                    selected = settings.is3x4,
+                    selected = !settings.useAutoLayout && settings.is3x4,
                     onClick = {
+                        settings.useAutoLayout = false
                         settings.use3x4()
                         speedDialUpdateTrigger++
                     }
@@ -189,8 +206,9 @@ fun SettingsScreen() {
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
-                    selected = settings.is4x3,
+                    selected = !settings.useAutoLayout && settings.is4x3,
                     onClick = {
+                        settings.useAutoLayout = false
                         settings.use4x3()
                         speedDialUpdateTrigger++
                     }
@@ -200,8 +218,9 @@ fun SettingsScreen() {
             
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
-                    selected = settings.is6x4,
+                    selected = !settings.useAutoLayout && settings.is6x4,
                     onClick = {
+                        settings.useAutoLayout = false
                         settings.use6x4()
                         speedDialUpdateTrigger++
                     }
@@ -213,8 +232,9 @@ fun SettingsScreen() {
         // Dedicated layout for dual-screen/rotatable requirements
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(
-                selected = settings.is3x2,
+                selected = !settings.useAutoLayout && settings.is3x2,
                 onClick = {
+                    settings.useAutoLayout = false
                     settings.use3x2()
                     speedDialUpdateTrigger++
                 }
@@ -494,6 +514,37 @@ fun SettingsScreen() {
                     }
                 }
             }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    if (settings.usePasscode) {
+                        showUnlockForAccidentalTouch = true
+                    } else {
+                        context.startActivity(Intent(context, com.elderdesktop.launcher.AccidentalTouchSettingsActivity::class.java))
+                    }
+                }
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.accidental_touch_settings_title), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = stringResource(R.string.accidental_touch_prevention_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Row(
@@ -896,6 +947,39 @@ fun SettingsScreen() {
                     Text(stringResource(R.string.cancel))
                 }
             }
+        )
+    }
+
+    if (showAccessibilityPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showAccessibilityPermissionDialog = false },
+            title = { Text(stringResource(R.string.permission_required)) },
+            text = { Text(stringResource(R.string.accidental_touch_prevention_desc)) },
+            confirmButton = {
+                Button(onClick = {
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    showAccessibilityPermissionDialog = false
+                }) {
+                    Text(stringResource(R.string.grant_permission))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAccessibilityPermissionDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (showUnlockForAccidentalTouch) {
+        com.elderdesktop.ui.UnlockDialog(
+            settings = settings,
+            pendingApp = null,
+            pendingSpeedDialIndex = -1,
+            onUnlock = { _, _ ->
+                context.startActivity(Intent(context, com.elderdesktop.launcher.AccidentalTouchSettingsActivity::class.java))
+            },
+            onDismiss = { showUnlockForAccidentalTouch = false }
         )
     }
 

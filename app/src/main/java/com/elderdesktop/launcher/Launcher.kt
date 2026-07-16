@@ -229,16 +229,11 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
             return
         }
 
-        val isLargeScreen = resources.configuration.smallestScreenWidthDp >= 600
-        // Lock to portrait only on small screens (phones)
-        // This avoids the Chrome OS lint warning and respects Android 17 large-screen policies
-        if (!isLargeScreen) {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
-
         tts = TextToSpeech(this, this)
 
         enableEdgeToEdge()
+
+        updateOrientationLock()
 
         checkLocationPermissions()
 
@@ -246,7 +241,7 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
             ElderDesktopTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.background
+                    color = androidx.compose.ui.graphics.Color.Transparent
                 ) {
                     DesktopLayout(
                         onAppLaunch = { app: AppInfo -> speak(app.label) },
@@ -268,7 +263,13 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
 
     override fun onResume() {
         super.onResume()
+        updateOrientationLock()
         updateWakeLock()
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateOrientationLock()
     }
 
     override fun onPause() {
@@ -446,6 +447,17 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
         if (settings.voiceAnnouncements) {
             tts?.setSpeechRate(settings.speechRate)
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+        }
+    }
+
+    private fun updateOrientationLock() {
+        val isLargeScreen = resources.configuration.smallestScreenWidthDp >= 600
+        if (!isLargeScreen) {
+            // Lock to portrait only on small screens (phones)
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            // Allow rotation on large screens (tablets/unfolded foldables)
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 

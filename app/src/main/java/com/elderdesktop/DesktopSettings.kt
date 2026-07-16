@@ -15,6 +15,14 @@ class DesktopSettings(context: Context) {
         get() = prefs.getInt("layout_cols", 2)
         set(value) = prefs.edit { putInt("layout_cols", value) }
 
+    var useAutoLayout: Boolean
+        get() = prefs.getBoolean("use_auto_layout", true)
+        set(value) = prefs.edit { putBoolean("use_auto_layout", value) }
+
+    var preventAccidentalTouch: Boolean
+        get() = prefs.getBoolean("prevent_accidental_touch", false)
+        set(value) = prefs.edit { putBoolean("prevent_accidental_touch", value) }
+
     var showVoiceAssistant: Boolean
         get() = prefs.getBoolean("show_voice_assistant", false)
         set(value) = prefs.edit { putBoolean("show_voice_assistant", value) }

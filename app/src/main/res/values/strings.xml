@@ -4,6 +4,7 @@
     <string name="desktop_settings">Desktop Settings</string>
     <string name="back">Back</string>
     <string name="layout">Layout</string>
+    <string name="layout_auto">Automatic (Responsive)</string>
     <string name="layout_2x3">2 x 3 Layout</string>
     <string name="layout_3x4">3 x 4 Layout</string>
     <string name="layout_3x2">3 x 2 Layout</string>
@@ -85,6 +86,10 @@
     <string name="desktop_notifications_desc">Show incoming notifications on home screen</string>
     <string name="prevent_sleep">Prevent Sleep Mode</string>
     <string name="prevent_sleep_desc">Keep the screen on while desktop is active</string>
+    <string name="accidental_touch_prevention">Accidental Touch Prevention</string>
+    <string name="accidental_touch_prevention_desc">Add edge protection zones to prevent accidental activation of system settings or unintended clicks. This feature works strictly locally and does NOT collect or upload any data.</string>
+    <string name="accidental_touch_settings_title">Accidental Touch Settings</string>
+    <string name="accidental_touch_privacy_notice">This feature uses an Accessibility Service to create protective overlays. We strictly commit to your privacy: no data is ever recorded, uploaded, or shared. This service is NOT used for remote control or any form of surveillance.</string>
     <string name="deepseek_chat">DeepSeek Chat</string>
     <string name="deepseek_chat_desc">Chat with DeepSeek AI using voice</string>
     <string name="deepseek_api_key">DeepSeek API Key</string>
@@ -136,7 +141,8 @@
         - &lt;b&gt;Location:&lt;/b&gt; Used only to fetch weather data for your area.&lt;br/&gt;
         - &lt;b&gt;Contacts:&lt;/b&gt; Used to display speed dial shortcuts and import contact information.&lt;br/&gt;
         - &lt;b&gt;Notifications:&lt;/b&gt; Used to display your incoming messages on the desktop.&lt;br/&gt;
-        - &lt;b&gt;Photos:&lt;/b&gt; Used only for setting contact profile pictures.&lt;br/&gt;&lt;br/&gt;
+        - &lt;b&gt;Photos:&lt;/b&gt; Used only for setting contact profile pictures.&lt;br/&gt;
+        - &lt;b&gt;Accessibility Service:&lt;/b&gt; Used strictly for \"Accidental Touch Prevention\" to block edge interactions. No data is collected or uploaded.&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;3. No Advertisements:&lt;/b&gt; This app is strictly non-commercial and does not contain any advertising SDKs.&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;4. Open Source:&lt;/b&gt; You can verify our data handling logic by reviewing our source code on GitHub/GitLab.
     </string>

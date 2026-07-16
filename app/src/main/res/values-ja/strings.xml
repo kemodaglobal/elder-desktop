@@ -4,6 +4,7 @@
     <string name="desktop_settings">デスクトップ設定</string>
     <string name="back">戻る</string>
     <string name="layout">レイアウト</string>
+    <string name="layout_auto">自動 (レスポンシブ)</string>
     <string name="layout_2x3">2 x 3 レイアウト</string>
     <string name="layout_3x4">3 x 4 レイアウト</string>
     <string name="layout_3x2">3 x 2 レイアウト</string>
@@ -85,6 +86,10 @@
     <string name="desktop_notifications_desc">ホーム画面に受信した通知を表示します</string>
     <string name="prevent_sleep">スリープモードを防止</string>
     <string name="prevent_sleep_desc">デスクトップがアクティブな間、画面をオンのままにします</string>
+    <string name="accidental_touch_prevention">誤タッチ防止モード</string>
+    <string name="accidental_touch_prevention_desc">画面端に保護領域を追加し、システム設定の誤変更や広告の誤クリックを防止します。この機能は完全にローカルで動作し、データの収集やアップロードは一切行いません。</string>
+    <string name="accidental_touch_settings_title">誤タッチ防止設定</string>
+    <string name="accidental_touch_privacy_notice">この機能は、保護オーバーレイを作成するためにアクセシビリティサービスを使用します。プライバシーを厳守します。データが記録、アップロード、または共有されることはありません。</string>
     <string name="deepseek_chat">DeepSeek チャット</string>
     <string name="deepseek_chat_desc">音声で DeepSeek AI とチャットする</string>
     <string name="deepseek_api_key">DeepSeek API キー</string>
@@ -134,7 +139,8 @@
         - &lt;b&gt;位置情報:&lt;/b&gt; あなたの地域の天気データを取得するためにのみ使用されます。&lt;br/&gt;
         - &lt;b&gt;連絡先:&lt;/b&gt; スピードダイヤルのショートカットを表示し、連絡先情報をインポートするために使用されます。&lt;br/&gt;
         - &lt;b&gt;通知:&lt;/b&gt; デスクトップに着信メッセージを表示するために使用されます。&lt;br/&gt;
-        - &lt;b&gt;写真:&lt;/b&gt; 連絡先のプロフィール写真を設定するためにのみ使用されます。&lt;br/&gt;&lt;br/&gt;
+        - &lt;b&gt;写真:&lt;/b&gt; 連絡先のプロフィール写真を設定するためにのみ使用されます。&lt;br/&gt;
+        - &lt;b&gt;無障碍サービス:&lt;/b&gt; 「誤タッチ防止モード」として画面端の操作をブロックするためにのみ使用されます。データの収集やアップロードは一切行いません。&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;3. 広告なし:&lt;/b&gt; このアプリは厳密に非営利目的であり、広告SDKは含まれていません。&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;4. オープンソース:&lt;/b&gt; GitHub/GitLabのソースコードを確認することで、私たちのデータ処理ロジックを検証できます。
     </string>
