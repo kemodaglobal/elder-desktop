@@ -4,18 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -23,30 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,13 +39,11 @@ fun SettingsScreen() {
     val settings = remember { DesktopSettings(context) }
     val scrollState = rememberScrollState()
 
-    // Fix for older Android versions auto-scrolling to bottom on open
     LaunchedEffect(Unit) {
         scrollState.scrollTo(0)
     }
-    
+
     var showVoice by remember { mutableStateOf(settings.showVoiceAssistant) }
-    var voiceMode by remember { mutableIntStateOf(settings.voiceAssistantMode) }
     var voiceAnnouncements by remember { mutableStateOf(settings.voiceAnnouncements) }
     var usePasscode by remember { mutableStateOf(settings.usePasscode) }
     var isBasicMode by remember { mutableStateOf(settings.isBasicMode) }
@@ -90,9 +55,11 @@ fun SettingsScreen() {
     var editingIndex by remember { mutableIntStateOf(-1) }
 
     var showAppSelectionDialog by remember { mutableStateOf(false) }
+    var showWhitelistDialog by remember { mutableStateOf(false) }
     var allApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
     var selectedApps by remember { mutableStateOf(settings.selectedApps) }
-    
+    var selectedWhitelist by remember { mutableStateOf(settings.notificationWhitelist) }
+
     var showAboutPage by remember { mutableStateOf(false) }
     var showPrivacyPolicy by remember { mutableStateOf(false) }
 
@@ -101,25 +68,15 @@ fun SettingsScreen() {
     var showAccessibilityPermissionDialog by remember { mutableStateOf(false) }
     var showUnlockForAccidentalTouch by remember { mutableStateOf(false) }
 
-    fun isNotificationServiceEnabled(): Boolean {
-        return NotificationManagerCompat.getEnabledListenerPackages(context)
-            .contains(context.packageName)
-    }
-
-    fun isOverlayPermissionGranted(): Boolean {
-        return Settings.canDrawOverlays(context)
-    }
+    fun isNotificationServiceEnabled(): Boolean = NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
+    fun isOverlayPermissionGranted(): Boolean = Settings.canDrawOverlays(context)
 
     if (showAboutPage) {
         AlertDialog(
             onDismissRequest = { showAboutPage = false },
             title = { Text(stringResource(R.string.about)) },
             text = { AboutPage() },
-            confirmButton = {
-                Button(onClick = { showAboutPage = false }) {
-                    Text(stringResource(R.string.back))
-                }
-            }
+            confirmButton = { Button(onClick = { showAboutPage = false }) { Text(stringResource(R.string.back)) } }
         )
     }
 
@@ -130,129 +87,65 @@ fun SettingsScreen() {
             text = {
                 Box(modifier = Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
                     Text(
-                        text = androidx.core.text.HtmlCompat.fromHtml(
-                            stringResource(R.string.privacy_policy_content),
-                            androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT
-                        ).toString(),
+                        text = androidx.core.text.HtmlCompat.fromHtml(stringResource(R.string.privacy_policy_content), androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT).toString(),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
             },
-            confirmButton = {
-                Button(onClick = { showPrivacyPolicy = false }) {
-                    Text(stringResource(R.string.back))
-                }
-            }
+            confirmButton = { Button(onClick = { showPrivacyPolicy = false }) { Text(stringResource(R.string.back)) } }
         )
     }
 
-    LaunchedEffect(showAppSelectionDialog) {
-        if (showAppSelectionDialog && allApps.isEmpty()) {
-            allApps = withContext(Dispatchers.IO) {
-                AppUtils.getLaunchableApps(context)
-            }
+    LaunchedEffect(showAppSelectionDialog, showWhitelistDialog) {
+        if ((showAppSelectionDialog || showWhitelistDialog) && allApps.isEmpty()) {
+            allApps = withContext(Dispatchers.IO) { AppUtils.getLaunchableApps(context) }
         }
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // ====== 1. 显示与布局 / Display & Layout ======
         Text(stringResource(R.string.layout), style = MaterialTheme.typography.titleLarge)
         
         Row(verticalAlignment = Alignment.CenterVertically) {
-            RadioButton(
-                selected = settings.useAutoLayout,
-                onClick = {
-                    settings.useAutoLayout = true
-                    speedDialUpdateTrigger++
-                }
-            )
+            RadioButton(selected = settings.useAutoLayout, onClick = { settings.useAutoLayout = true; speedDialUpdateTrigger++ })
             Text(stringResource(R.string.layout_auto), modifier = Modifier.padding(start = 8.dp))
         }
 
         val configuration = LocalConfiguration.current
         val sw = configuration.smallestScreenWidthDp
         
-        // Grid Selection
         if (sw < 600) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = !settings.useAutoLayout && settings.is2x3,
-                    onClick = {
-                        settings.useAutoLayout = false
-                        settings.use2x3()
-                        speedDialUpdateTrigger++
-                    }
-                )
+                RadioButton(selected = !settings.useAutoLayout && settings.is2x3, onClick = { settings.useAutoLayout = false; settings.use2x3(); speedDialUpdateTrigger++ })
                 Text(stringResource(R.string.layout_2x3), modifier = Modifier.padding(start = 8.dp))
             }
-
             Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = !settings.useAutoLayout && settings.is3x4,
-                    onClick = {
-                        settings.useAutoLayout = false
-                        settings.use3x4()
-                        speedDialUpdateTrigger++
-                    }
-                )
+                RadioButton(selected = !settings.useAutoLayout && settings.is3x4, onClick = { settings.useAutoLayout = false; settings.use3x4(); speedDialUpdateTrigger++ })
                 Text(stringResource(R.string.layout_3x4), modifier = Modifier.padding(start = 8.dp))
             }
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = !settings.useAutoLayout && settings.is4x3,
-                    onClick = {
-                        settings.useAutoLayout = false
-                        settings.use4x3()
-                        speedDialUpdateTrigger++
-                    }
-                )
+                RadioButton(selected = !settings.useAutoLayout && settings.is4x3, onClick = { settings.useAutoLayout = false; settings.use4x3(); speedDialUpdateTrigger++ })
                 Text(stringResource(R.string.layout_4x3), modifier = Modifier.padding(start = 8.dp))
             }
-            
             Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = !settings.useAutoLayout && settings.is6x4,
-                    onClick = {
-                        settings.useAutoLayout = false
-                        settings.use6x4()
-                        speedDialUpdateTrigger++
-                    }
-                )
+                RadioButton(selected = !settings.useAutoLayout && settings.is6x4, onClick = { settings.useAutoLayout = false; settings.use6x4(); speedDialUpdateTrigger++ })
                 Text(stringResource(R.string.layout_6x4), modifier = Modifier.padding(start = 8.dp))
             }
         }
 
-        // Dedicated layout for dual-screen/rotatable requirements
         Row(verticalAlignment = Alignment.CenterVertically) {
-            RadioButton(
-                selected = !settings.useAutoLayout && settings.is3x2,
-                onClick = {
-                    settings.useAutoLayout = false
-                    settings.use3x2()
-                    speedDialUpdateTrigger++
-                }
-            )
+            RadioButton(selected = !settings.useAutoLayout && settings.is3x2, onClick = { settings.useAutoLayout = false; settings.use3x2(); speedDialUpdateTrigger++ })
             Text(stringResource(R.string.layout_3x2), modifier = Modifier.padding(start = 8.dp))
         }
 
-        // Font Size
         Column {
             Text(stringResource(R.string.font_size))
-            var fontSize by remember { mutableFloatStateOf(settings.fontSizeMultiplier) }
-            Slider(
-                value = fontSize,
-                onValueChange = { fontSize = it },
-                onValueChangeFinished = { settings.fontSizeMultiplier = fontSize },
-                valueRange = 0.8f..1.5f,
-                steps = 5
-            )
+            var fSize by remember { mutableFloatStateOf(settings.fontSizeMultiplier) }
+            Slider(value = fSize, onValueChange = { fSize = it }, onValueChangeFinished = { settings.fontSizeMultiplier = fSize }, valueRange = 0.8f..1.5f, steps = 5)
         }
 
         // Icon Size
@@ -272,65 +165,30 @@ fun SettingsScreen() {
         Column {
             Text(stringResource(R.string.icon_shape))
             val shapes = listOf("rounded", "circle", "square", "native")
-            val shapeLabels = listOf(
-                R.string.shape_rounded,
-                R.string.shape_circle,
-                R.string.shape_square,
-                R.string.shape_native
-            )
+            val shapeLabels = listOf(R.string.shape_rounded, R.string.shape_circle, R.string.shape_square, R.string.shape_native)
             var selectedShape by remember { mutableStateOf(settings.iconShape) }
             shapes.forEachIndexed { index, shape ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = selectedShape == shape,
-                        onClick = {
-                            selectedShape = shape
-                            settings.iconShape = shape
-                            speedDialUpdateTrigger++ // Refresh icons
-                        }
-                    )
+                    RadioButton(selected = selectedShape == shape, onClick = { selectedShape = shape; settings.iconShape = shape; speedDialUpdateTrigger++ })
                     Text(stringResource(shapeLabels[index]), modifier = Modifier.padding(start = 8.dp))
                 }
             }
         }
 
-        // High Contrast
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.high_contrast))
-            var highContrast by remember { mutableStateOf(settings.highContrastMode) }
-            Switch(
-                checked = highContrast,
-                onCheckedChange = {
-                    highContrast = it
-                    settings.highContrastMode = it
-                }
-            )
+            var hContrast by remember { mutableStateOf(settings.highContrastMode) }
+            Switch(checked = hContrast, onCheckedChange = { hContrast = it; settings.highContrastMode = it })
         }
 
         // Theme Selection
         Column {
             Text(stringResource(R.string.theme_selection), style = MaterialTheme.typography.bodyLarge)
-            val themes = listOf(
-                "classic" to R.string.theme_classic,
-                "emerald" to R.string.theme_emerald,
-                "rose" to R.string.theme_rose,
-                "orange" to R.string.theme_orange,
-                "high_contrast" to R.string.theme_high_contrast
-            )
+            val themes = listOf("classic" to R.string.theme_classic, "emerald" to R.string.theme_emerald, "rose" to R.string.theme_rose, "orange" to R.string.theme_orange, "high_contrast" to R.string.theme_high_contrast)
             var selectedTheme by remember { mutableStateOf(settings.themeChoice) }
             themes.forEach { (id, labelRes) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = selectedTheme == id,
-                        onClick = {
-                            selectedTheme = id
-                            settings.themeChoice = id
-                        }
-                    )
+                    RadioButton(selected = selectedTheme == id, onClick = { selectedTheme = id; settings.themeChoice = id })
                     Text(stringResource(labelRes), modifier = Modifier.padding(start = 8.dp))
                 }
             }
@@ -339,21 +197,11 @@ fun SettingsScreen() {
         // Font Selection
         Column {
             Text(stringResource(R.string.font_selection), style = MaterialTheme.typography.bodyLarge)
-            val fonts = listOf(
-                "default" to R.string.font_default,
-                "serif" to R.string.font_serif,
-                "monospace" to R.string.font_monospace
-            )
+            val fonts = listOf("default" to R.string.font_default, "serif" to R.string.font_serif, "monospace" to R.string.font_monospace)
             var selectedFont by remember { mutableStateOf(settings.fontChoice) }
             fonts.forEach { (id, labelRes) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = selectedFont == id,
-                        onClick = {
-                            selectedFont = id
-                            settings.fontChoice = id
-                        }
-                    )
+                    RadioButton(selected = selectedFont == id, onClick = { selectedFont = id; settings.fontChoice = id })
                     Text(stringResource(labelRes), modifier = Modifier.padding(start = 8.dp))
                 }
             }
@@ -363,30 +211,15 @@ fun SettingsScreen() {
 
         // ====== 2. 应用与联系人 / Apps & Contacts ======
         Text(stringResource(R.string.manage_apps), style = MaterialTheme.typography.titleLarge)
-        
-        Button(
-            onClick = { showAppSelectionDialog = true },
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = { showAppSelectionDialog = true }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.select_apps))
         }
 
-        val userApps = remember(allApps, selectedApps) {
-            allApps.filter { it.packageName in selectedApps }
-        }
-
+        val userApps = remember(allApps, selectedApps) { allApps.filter { it.packageName in selectedApps } }
         if (userApps.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
             userApps.forEach { app ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
+                    Row(modifier = Modifier.padding(8.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(app.label, modifier = Modifier.padding(start = 8.dp))
                         IconButton(onClick = {
                             val newSelected = selectedApps.toMutableSet()
@@ -401,62 +234,26 @@ fun SettingsScreen() {
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
         Text(stringResource(R.string.add_contact), style = MaterialTheme.typography.titleLarge)
-        
         val totalSpeedDials = (settings.layoutRows - 1) * settings.layoutCols
         key(speedDialUpdateTrigger) {
             for (i in 0 until totalSpeedDials) {
                 val contact = settings.getSpeedDial(i)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             if (contact?.third != null) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(contact.third!!.toUri()),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(40.dp).clip(CircleShape),
-                                    contentScale = ContentScale.Crop
-                                )
+                                Image(painter = rememberAsyncImagePainter(contact.third!!.toUri()), contentDescription = null, modifier = Modifier.size(40.dp).clip(CircleShape), contentScale = ContentScale.Crop)
                                 Spacer(modifier = Modifier.width(12.dp))
                             }
                             Column {
-                                Text(
-                                    text = contact?.first ?: stringResource(R.string.add_contact),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                if (contact != null) {
-                                    Text(
-                                        text = contact.second,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    )
-                                }
+                                Text(text = contact?.first ?: stringResource(R.string.add_contact), style = MaterialTheme.typography.bodyLarge)
+                                if (contact != null) Text(text = contact.second, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                             }
                         }
-                        
                         Row {
-                            IconButton(onClick = {
-                                editingIndex = i
-                                showEditContactDialog = true
-                            }) {
-                                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit_contact))
-                            }
-                            if (contact != null) {
-                                IconButton(onClick = {
-                                    settings.clearSpeedDial(i)
-                                    speedDialUpdateTrigger++
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error)
-                                }
-                            }
+                            IconButton(onClick = { editingIndex = i; showEditContactDialog = true }) { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit_contact)) }
+                            if (contact != null) IconButton(onClick = { settings.clearSpeedDial(i); speedDialUpdateTrigger++ }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error) }
                         }
                     }
                 }
@@ -465,203 +262,45 @@ fun SettingsScreen() {
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        // ====== 3. 语音与 AI / Voice & AI ======
+        // ====== 3. 功能 / Features ======
         Text(stringResource(R.string.features), style = MaterialTheme.typography.titleLarge)
         
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.voice_assistant_button))
-            Switch(
-                checked = showVoice,
-                onCheckedChange = {
-                    showVoice = it
-                    settings.showVoiceAssistant = it
-                }
-            )
-        }
-
-        if (showVoice) {
-            Column(modifier = Modifier.padding(start = 16.dp)) {
-                Text(stringResource(R.string.voice_assistant_mode), style = MaterialTheme.typography.bodyMedium)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = voiceMode == 0,
-                        onClick = {
-                            voiceMode = 0
-                            settings.voiceAssistantMode = 0
-                        }
-                    )
-                    Text(stringResource(R.string.voice_assistant_system), modifier = Modifier.padding(start = 8.dp))
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = voiceMode == 1,
-                        onClick = {
-                            voiceMode = 1
-                            settings.voiceAssistantMode = 1
-                        }
-                    )
-                    Column(modifier = Modifier.padding(start = 8.dp)) {
-                        Text(stringResource(R.string.voice_assistant_engine))
-                        Text(
-                            text = stringResource(R.string.voice_assistant_engine_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+            Switch(checked = showVoice, onCheckedChange = { showVoice = it; settings.showVoiceAssistant = it })
         }
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    if (settings.usePasscode) {
-                        showUnlockForAccidentalTouch = true
-                    } else {
-                        context.startActivity(Intent(context, com.elderdesktop.launcher.AccidentalTouchSettingsActivity::class.java))
-                    }
-                }
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.fillMaxWidth().clickable {
+                if (settings.usePasscode) showUnlockForAccidentalTouch = true
+                else context.startActivity(Intent(context, com.elderdesktop.launcher.AccidentalTouchSettingsActivity::class.java))
+            }.padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.accidental_touch_settings_title), style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    text = stringResource(R.string.accidental_touch_prevention_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                )
+                Text(text = stringResource(R.string.accidental_touch_prevention_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.voice_announcements))
-            Switch(
-                checked = voiceAnnouncements,
-                onCheckedChange = {
-                    voiceAnnouncements = it
-                    settings.voiceAnnouncements = it
-                }
-            )
+            Switch(checked = voiceAnnouncements, onCheckedChange = { voiceAnnouncements = it; settings.voiceAnnouncements = it })
         }
 
-        Column {
-            Text(stringResource(R.string.speech_rate))
-            var speechRate by remember { mutableFloatStateOf(settings.speechRate) }
-            Slider(
-                value = speechRate,
-                onValueChange = { speechRate = it },
-                onValueChangeFinished = { settings.speechRate = speechRate },
-                valueRange = 0.5f..2.0f,
-                steps = 5
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.ai_chat))
-                Text(
-                    text = stringResource(R.string.ai_chat_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(stringResource(R.string.floating_notifications))
+                Text(stringResource(R.string.floating_notifications_desc), style = MaterialTheme.typography.bodySmall)
             }
-            var enableAI by remember { mutableStateOf(settings.enableDeepSeek) }
-            Switch(
-                checked = enableAI,
-                onCheckedChange = {
-                    enableAI = it
-                    settings.enableDeepSeek = it
-                }
-            )
+            var fNotif by remember { mutableStateOf(settings.enableFloatingNotifications) }
+            Switch(checked = fNotif, onCheckedChange = { fNotif = it; settings.enableFloatingNotifications = it })
         }
 
-        if (settings.enableDeepSeek) {
-            Text(stringResource(R.string.ai_provider), style = MaterialTheme.typography.bodyMedium)
-            var currentProvider by remember { mutableStateOf(settings.aiProvider) }
-            Column(modifier = Modifier.padding(start = 16.dp)) {
-                listOf(
-                    "deepseek" to "DeepSeek",
-                    "openai" to "ChatGPT",
-                    "google" to "Google AI (Gemini)"
-                ).forEach { (id, name) ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = currentProvider == id,
-                            onClick = {
-                                currentProvider = id
-                                settings.aiProvider = id
-                            }
-                        )
-                        Text(name, modifier = Modifier.padding(start = 8.dp))
-                    }
-                }
-            }
-
-            when (currentProvider) {
-                "deepseek" -> {
-                    var apiKey by remember { mutableStateOf(settings.deepSeekApiKey) }
-                    OutlinedTextField(
-                        value = apiKey,
-                        onValueChange = { newValue ->
-                            apiKey = newValue
-                            settings.deepSeekApiKey = newValue
-                        },
-                        label = { Text(stringResource(R.string.deepseek_api_key)) },
-                        placeholder = { Text(stringResource(R.string.enter_api_key)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-                "openai" -> {
-                    var apiKey by remember { mutableStateOf(settings.openAiApiKey) }
-                    OutlinedTextField(
-                        value = apiKey,
-                        onValueChange = { newValue ->
-                            apiKey = newValue
-                            settings.openAiApiKey = newValue
-                        },
-                        label = { Text(stringResource(R.string.openai_api_key)) },
-                        placeholder = { Text(stringResource(R.string.enter_api_key)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-                "google" -> {
-                    var apiKey by remember { mutableStateOf(settings.googleAiApiKey) }
-                    OutlinedTextField(
-                        value = apiKey,
-                        onValueChange = { newValue ->
-                            apiKey = newValue
-                            settings.googleAiApiKey = newValue
-                        },
-                        label = { Text(stringResource(R.string.google_ai_api_key)) },
-                        placeholder = { Text(stringResource(R.string.enter_api_key)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
+        if (settings.enableFloatingNotifications) {
+            Button(onClick = { showWhitelistDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                Text("Select Whitelisted Apps")
             }
         }
 
@@ -670,119 +309,50 @@ fun SettingsScreen() {
         // ====== 4. 通知与系统 / Notifications & System ======
         Text(stringResource(R.string.system_settings), style = MaterialTheme.typography.titleLarge)
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Column {
                 Text(stringResource(R.string.basic_mode))
-                Text(
-                    text = stringResource(R.string.basic_mode_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(text = stringResource(R.string.basic_mode_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Switch(
-                checked = isBasicMode,
-                onCheckedChange = {
-                    isBasicMode = it
-                    settings.isBasicMode = it
-                }
-            )
+            Switch(checked = isBasicMode, onCheckedChange = { isBasicMode = it; settings.isBasicMode = it })
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.desktop_notifications))
-                Text(
-                    text = stringResource(R.string.desktop_notifications_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(text = stringResource(R.string.desktop_notifications_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            var enableNotifications by remember { mutableStateOf(settings.enableDesktopNotifications) }
-            Switch(
-                checked = enableNotifications,
-                onCheckedChange = {
-                    if (it) {
-                        if (!isNotificationServiceEnabled()) {
-                            showNotificationPermissionDialog = true
-                        } else if (!isOverlayPermissionGranted()) {
-                            showOverlayPermissionDialog = true
-                        } else {
-                            enableNotifications = true
-                            settings.enableDesktopNotifications = true
-                        }
-                    } else {
-                        enableNotifications = false
-                        settings.enableDesktopNotifications = false
-                    }
-                }
-            )
+            var enableNotif by remember { mutableStateOf(settings.enableDesktopNotifications) }
+            Switch(checked = enableNotif, onCheckedChange = { 
+                if (it) {
+                    if (!isNotificationServiceEnabled()) showNotificationPermissionDialog = true
+                    else if (!isOverlayPermissionGranted()) showOverlayPermissionDialog = true
+                    else { enableNotif = true; settings.enableDesktopNotifications = true }
+                } else { enableNotif = false; settings.enableDesktopNotifications = false }
+            })
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.prevent_sleep))
-                Text(
-                    text = stringResource(R.string.prevent_sleep_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(text = stringResource(R.string.prevent_sleep_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            var preventSleep by remember { mutableStateOf(settings.preventSleep) }
-            Switch(
-                checked = preventSleep,
-                onCheckedChange = {
-                    preventSleep = it
-                    settings.preventSleep = it
-                }
-            )
+            var preventS by remember { mutableStateOf(settings.preventSleep) }
+            Switch(checked = preventS, onCheckedChange = { preventS = it; settings.preventSleep = it })
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // ====== 5. 安全与隐私 / Security & Privacy ======
         Text(stringResource(R.string.peace_of_mind_lock), style = MaterialTheme.typography.titleLarge)
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.peace_of_mind_lock))
-            Switch(
-                checked = usePasscode,
-                onCheckedChange = {
-                    if (it && passcode.isEmpty()) {
-                        showPasscodeDialog = true
-                    } else {
-                        usePasscode = it
-                        settings.usePasscode = it
-                    }
-                }
-            )
+            Switch(checked = usePasscode, onCheckedChange = { if (it && passcode.isEmpty()) showPasscodeDialog = true else { usePasscode = it; settings.usePasscode = it } })
         }
-
         if (usePasscode) {
-            TextButton(onClick = { showPasscodeDialog = true }) {
-                Text(stringResource(R.string.change_passcode, passcode))
-            }
+            TextButton(onClick = { showPasscodeDialog = true }) { Text(stringResource(R.string.change_passcode, passcode)) }
         }
-
-        TextButton(
-            onClick = { showPrivacyPolicy = true },
-            modifier = Modifier.align(Alignment.Start)
-        ) {
+        TextButton(onClick = { showPrivacyPolicy = true }, modifier = Modifier.align(Alignment.Start)) {
             Text(stringResource(R.string.privacy_policy))
         }
 
@@ -790,209 +360,49 @@ fun SettingsScreen() {
 
         // ====== 6. 天气 / Weather ======
         Text(stringResource(R.string.weather), style = MaterialTheme.typography.titleLarge)
-        
         Text(stringResource(R.string.weather_provider), style = MaterialTheme.typography.bodyMedium)
-        var currentWeatherProvider by remember { mutableStateOf(settings.weatherProvider) }
-        var weatherKey by remember { mutableStateOf(settings.weatherApiKey) }
-        
+        var weatherP by remember { mutableStateOf(settings.weatherProvider) }
         Column(modifier = Modifier.padding(start = 16.dp)) {
-            listOf(
-                "open-meteo" to "Open-Meteo (Free)",
-                "qweather" to "QWeather (HeWeather)",
-                "openweather" to "OpenWeatherMap"
-            ).forEach { (id, name) ->
+            listOf("open-meteo" to "Open-Meteo (Free)", "qweather" to "QWeather (HeWeather)", "openweather" to "OpenWeatherMap").forEach { (id, name) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = currentWeatherProvider == id,
-                        onClick = {
-                            currentWeatherProvider = id
-                            settings.weatherProvider = id
-                        }
-                    )
+                    RadioButton(selected = weatherP == id, onClick = { weatherP = id; settings.weatherProvider = id })
                     Text(name, modifier = Modifier.padding(start = 8.dp))
                 }
             }
         }
 
-        if (currentWeatherProvider != "open-meteo") {
-            OutlinedTextField(
-                value = weatherKey,
-                onValueChange = { newValue ->
-                    weatherKey = newValue
-                    settings.weatherApiKey = newValue
-                },
-                label = { Text(stringResource(R.string.weather_api_key)) },
-                placeholder = { Text(stringResource(R.string.enter_api_key)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-        }
-
-        val manualLocations = settings.manualWeatherLocations
-        if (manualLocations.isNotEmpty()) {
-            manualLocations.forEach { loc ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+        val manualLocs = settings.manualWeatherLocations
+        if (manualLocs.isNotEmpty()) {
+            manualLocs.forEach { loc ->
+                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
+                    Row(modifier = Modifier.padding(8.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(loc, modifier = Modifier.padding(start = 8.dp))
-                        IconButton(onClick = {
-                            settings.removeWeatherLocation(loc)
-                            speedDialUpdateTrigger++ // Reuse trigger to refresh
-                        }) {
+                        IconButton(onClick = { settings.removeWeatherLocation(loc); speedDialUpdateTrigger++ }) {
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
             }
-        } else {
-            Text(
-                text = stringResource(R.string.no_manual_locations),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // ====== 7. 其他 / Others ======
-        Button(
-            onClick = {
-                context.startActivity(Intent(Settings.ACTION_SETTINGS))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (MaterialTheme.colorScheme.surface == Color.Black) Color.White 
-                                 else Color(0xFFE67E22),
-                contentColor = if (MaterialTheme.colorScheme.surface == Color.Black) Color.Black 
-                               else Color.White
-            )
-        ) {
+        Button(onClick = { context.startActivity(Intent(Settings.ACTION_SETTINGS)) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = if (MaterialTheme.colorScheme.surface == Color.Black) Color.White else Color(0xFFE67E22))) {
             Text(stringResource(R.string.system_settings))
         }
-
-        Button(
-            onClick = { showAboutPage = true },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-        ) {
-            Text(stringResource(R.string.about), color = Color.White)
+        Button(onClick = { showAboutPage = true }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)) {
+            Text(stringResource(R.string.about))
         }
     }
 
-    // ====== 对话框 ======
-    if (showPasscodeDialog) {
-        PasscodeDialog(
-            onDismiss = { showPasscodeDialog = false },
-            onSave = { newPasscode ->
-                passcode = newPasscode
-                settings.passcode = newPasscode
-                usePasscode = true
-                settings.usePasscode = true
-                showPasscodeDialog = false
-            }
-        )
-    }
-
-    if (showEditContactDialog) {
-        EditContactDialog(
-            index = editingIndex,
-            settings = settings,
-            onDismiss = { showEditContactDialog = false },
-            onSaved = { speedDialUpdateTrigger++ }
-        )
-    }
-
-    if (showNotificationPermissionDialog) {
-        AlertDialog(
-            onDismissRequest = { showNotificationPermissionDialog = false },
-            title = { Text(stringResource(R.string.notification_permission_required)) },
-            text = { Text(stringResource(R.string.notification_permission_desc)) },
-            confirmButton = {
-                Button(onClick = {
-                    context.startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
-                    showNotificationPermissionDialog = false
-                }) {
-                    Text(stringResource(R.string.grant_permission))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showNotificationPermissionDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
-
-    if (showOverlayPermissionDialog) {
-        AlertDialog(
-            onDismissRequest = { showOverlayPermissionDialog = false },
-            title = { Text(stringResource(R.string.overlay_permission_required)) },
-            text = { Text(stringResource(R.string.overlay_permission_desc)) },
-            confirmButton = {
-                Button(onClick = {
-                    context.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${context.packageName}".toUri()))
-                    showOverlayPermissionDialog = false
-                }) {
-                    Text(stringResource(R.string.grant_permission))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showOverlayPermissionDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
-
-    if (showAccessibilityPermissionDialog) {
-        AlertDialog(
-            onDismissRequest = { showAccessibilityPermissionDialog = false },
-            title = { Text(stringResource(R.string.permission_required)) },
-            text = { Text(stringResource(R.string.accidental_touch_prevention_desc)) },
-            confirmButton = {
-                Button(onClick = {
-                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                    showAccessibilityPermissionDialog = false
-                }) {
-                    Text(stringResource(R.string.grant_permission))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAccessibilityPermissionDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
-
-    if (showUnlockForAccidentalTouch) {
-        com.elderdesktop.ui.UnlockDialog(
-            settings = settings,
-            pendingApp = null,
-            pendingSpeedDialIndex = -1,
-            onUnlock = { _, _ ->
-                context.startActivity(Intent(context, com.elderdesktop.launcher.AccidentalTouchSettingsActivity::class.java))
-            },
-            onDismiss = { showUnlockForAccidentalTouch = false }
-        )
-    }
-
-    if (showAppSelectionDialog) {
-        AppSelectionDialog(
-            allApps = allApps,
-            selectedApps = selectedApps,
-            onSelectionChanged = { selectedApps = it },
-            onDismiss = { showAppSelectionDialog = false },
-            onSave = {
-                settings.selectedApps = selectedApps
-                showAppSelectionDialog = false
-            }
-        )
-    }
+    // Dialogs
+    if (showPasscodeDialog) PasscodeDialog(onDismiss = { showPasscodeDialog = false }, onSave = { passcode = it; settings.passcode = it; usePasscode = true; settings.usePasscode = true; showPasscodeDialog = false })
+    if (showEditContactDialog) EditContactDialog(index = editingIndex, settings = settings, onDismiss = { showEditContactDialog = false }, onSaved = { speedDialUpdateTrigger++ })
+    if (showNotificationPermissionDialog) AlertDialog(onDismissRequest = { showNotificationPermissionDialog = false }, title = { Text("Permission Required") }, confirmButton = { Button(onClick = { context.startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")); showNotificationPermissionDialog = false }) { Text("Grant") } })
+    if (showOverlayPermissionDialog) AlertDialog(onDismissRequest = { showOverlayPermissionDialog = false }, title = { Text("Overlay Required") }, confirmButton = { Button(onClick = { context.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${context.packageName}".toUri())); showOverlayPermissionDialog = false }) { Text("Grant") } })
+    if (showAccessibilityPermissionDialog) AlertDialog(onDismissRequest = { showAccessibilityPermissionDialog = false }, title = { Text("Accessibility Required") }, text = { Text(stringResource(R.string.accidental_touch_prevention_desc)) }, confirmButton = { Button(onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)); showAccessibilityPermissionDialog = false }) { Text("Grant") } })
+    if (showUnlockForAccidentalTouch) com.elderdesktop.ui.UnlockDialog(settings = settings, pendingApp = null, pendingSpeedDialIndex = -1, onUnlock = { _, _ -> context.startActivity(Intent(context, com.elderdesktop.launcher.AccidentalTouchSettingsActivity::class.java)) }, onDismiss = { showUnlockForAccidentalTouch = false })
+    if (showAppSelectionDialog) AppSelectionDialog(allApps = allApps, selectedApps = selectedApps, onSelectionChanged = { selectedApps = it }, onDismiss = { showAppSelectionDialog = false }, onSave = { settings.selectedApps = selectedApps; showAppSelectionDialog = false })
+    if (showWhitelistDialog) AppSelectionDialog(allApps = allApps, selectedApps = selectedWhitelist, onSelectionChanged = { selectedWhitelist = it }, onDismiss = { showWhitelistDialog = false }, onSave = { settings.notificationWhitelist = selectedWhitelist; showWhitelistDialog = false })
 }

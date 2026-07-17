@@ -23,6 +23,38 @@ class DesktopSettings(context: Context) {
         get() = prefs.getBoolean("prevent_accidental_touch", false)
         set(value) = prefs.edit { putBoolean("prevent_accidental_touch", value) }
 
+    var preventEdgeTouch: Boolean
+        get() = prefs.getBoolean("prevent_edge_touch", true)
+        set(value) = prefs.edit { putBoolean("prevent_edge_touch", value) }
+
+    var preventAdTouch: Boolean
+        get() = prefs.getBoolean("prevent_ad_touch", false)
+        set(value) = prefs.edit { putBoolean("prevent_ad_touch", value) }
+
+    var preventUnknownInstall: Boolean
+        get() = prefs.getBoolean("prevent_unknown_install", false)
+        set(value) = prefs.edit { putBoolean("prevent_unknown_install", value) }
+
+    var enableFloatingNotifications: Boolean
+        get() = prefs.getBoolean("enable_floating_notifications", false)
+        set(value) = prefs.edit { putBoolean("enable_floating_notifications", value) }
+
+    var notificationWhitelist: Set<String>
+        get() = prefs.getStringSet("notification_whitelist", setOf("com.tencent.mm", "com.android.mms")) ?: emptySet()
+        set(value) = prefs.edit { putStringSet("notification_whitelist", value) }
+
+    var intercept400Calls: Boolean
+        get() = prefs.getBoolean("intercept_400_calls", false)
+        set(value) = prefs.edit { putBoolean("intercept_400_calls", value) }
+
+    var interceptOverseasCalls: Boolean
+        get() = prefs.getBoolean("intercept_overseas_calls", false)
+        set(value) = prefs.edit { putBoolean("intercept_overseas_calls", value) }
+
+    var interceptSpamCalls: Boolean
+        get() = prefs.getBoolean("intercept_spam_calls", false)
+        set(value) = prefs.edit { putBoolean("intercept_spam_calls", value) }
+
     var showVoiceAssistant: Boolean
         get() = prefs.getBoolean("show_voice_assistant", false)
         set(value) = prefs.edit { putBoolean("show_voice_assistant", value) }

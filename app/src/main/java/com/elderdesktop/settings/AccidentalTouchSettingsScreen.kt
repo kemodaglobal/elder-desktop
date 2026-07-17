@@ -42,6 +42,14 @@ fun AccidentalTouchSettingsScreen() {
     val scrollState = rememberScrollState()
 
     var accidentalTouch by remember { mutableStateOf(settings.preventAccidentalTouch) }
+    var edgeTouch by remember { mutableStateOf(settings.preventEdgeTouch) }
+    var adTouch by remember { mutableStateOf(settings.preventAdTouch) }
+    var unknownInstall by remember { mutableStateOf(settings.preventUnknownInstall) }
+    
+    var intercept400 by remember { mutableStateOf(settings.intercept400Calls) }
+    var interceptOverseas by remember { mutableStateOf(settings.interceptOverseasCalls) }
+    var interceptSpam by remember { mutableStateOf(settings.interceptSpamCalls) }
+
     var showAccessibilityPermissionDialog by remember { mutableStateOf(false) }
 
     fun isAccessibilityServiceEnabled(): Boolean {
@@ -90,11 +98,57 @@ fun AccidentalTouchSettingsScreen() {
                         }
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.accidental_touch_prevention_desc),
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Edge Protection
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.edge_protection), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.edge_protection_desc), style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(checked = edgeTouch, onCheckedChange = { edgeTouch = it; settings.preventEdgeTouch = it })
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Ad Protection
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.ad_protection), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.ad_protection_desc), style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(checked = adTouch, onCheckedChange = { adTouch = it; settings.preventAdTouch = it })
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Install Prevention
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.install_protection), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.install_protection_desc), style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(checked = unknownInstall, onCheckedChange = { unknownInstall = it; settings.preventUnknownInstall = it })
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                androidx.compose.material3.HorizontalDivider()
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(stringResource(R.string.spam_call_interception), style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(R.string.intercept_400_calls))
+                    Switch(checked = intercept400, onCheckedChange = { intercept400 = it; settings.intercept400Calls = it })
+                }
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(R.string.intercept_overseas_calls))
+                    Switch(checked = interceptOverseas, onCheckedChange = { interceptOverseas = it; settings.interceptOverseasCalls = it })
+                }
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(R.string.intercept_spam_calls))
+                    Switch(checked = interceptSpam, onCheckedChange = { interceptSpam = it; settings.interceptSpamCalls = it })
+                }
             }
         }
 

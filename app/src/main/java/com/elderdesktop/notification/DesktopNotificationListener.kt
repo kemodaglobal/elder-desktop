@@ -22,7 +22,17 @@ class DesktopNotificationListener : NotificationListenerService() {
         sbn?.let {
             if (it.packageName == packageName) return@let // Ignore own notifications
             
-            NotificationRepository.addNotification(it)
+            // Whitelist check
+            if (!settings.notificationWhitelist.contains(it.packageName)) {
+                Log.d("NotificationListener", "Ignoring non-whitelisted notification from ${it.packageName}")
+                return@let
+            }
+
+            if (settings.enableFloatingNotifications) {
+                FloatingNotificationManager.showNotification(this, it)
+            } else {
+                NotificationRepository.addNotification(it)
+            }
             Log.d("NotificationListener", "Notification from ${it.packageName}")
         }
     }

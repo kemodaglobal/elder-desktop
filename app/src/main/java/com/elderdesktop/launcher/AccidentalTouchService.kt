@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import com.elderdesktop.DesktopSettings
 
 @SuppressLint("AccessibilityPolicy")
@@ -23,7 +24,79 @@ class AccidentalTouchService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Not used for overlay logic
+        val settings = DesktopSettings(this)
+        if (!settings.preventAccidentalTouch) return
+
+        val rootNode = rootInActiveWindow ?: return
+
+        if (settings.preventAdTouch) {
+            scanForAds(rootNode)
+        }
+
+        if (settings.preventUnknownInstall) {
+            interceptInstaller(event, rootNode)
+        }
+    }
+
+    private fun scanForAds(node: AccessibilityNodeInfo) {
+        val adKeywords = listOf("adview", "banner", "promotion", "广告", "广告栏", "推广")
+        val text = node.text?.toString()?.lowercase() ?: ""
+        val contentDesc = node.contentDescription?.toString()?.lowercase() ?: ""
+        val resourceName = node.viewIdResourceName?.lowercase() ?: ""
+
+        if (adKeywords.any { text.contains(it) || contentDesc.contains(it) || resourceName.contains(it) }) {
+            // Attempt to block or warning
+            // For seniors, we'll just log it for now or try to hide it if we had more advanced overlay logic
+            android.util.Log.d("AccidentalTouchService", "Potential ad detected: $text / $resourceName")
+        }
+
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i)
+            if (child != null) {
+                scanForAds(child)
+            }
+        }
+    }
+
+    private fun interceptInstaller(event: AccessibilityEvent?, rootNode: AccessibilityNodeInfo) {
+        val packageName = event?.packageName?.toString() ?: ""
+        if (packageName.contains("packageinstaller")) {
+            val riskKeywords = listOf("unknown source", "risk", "unsafe", "未知来源", "风险", "不安全")
+            if (findTextInNode(rootNode, riskKeywords)) {
+                // Find "Cancel" or "Close" button
+                val cancelKeywords = listOf("cancel", "deny", "refuse", "取消", "拒绝", "关闭")
+                val cancelButton = findButtonWithText(rootNode, cancelKeywords)
+                if (cancelButton != null) {
+                    android.util.Log.w("AccidentalTouchService", "Intercepting risky installer. Clicking Cancel.")
+                    cancelButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                } else {
+                    // Fallback: Perform Global Back
+                    android.util.Log.w("AccidentalTouchService", "Intercepting risky installer. Performing Back.")
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                }
+            }
+        }
+    }
+
+    private fun findTextInNode(node: AccessibilityNodeInfo, keywords: List<String>): Boolean {
+        val text = node.text?.toString()?.lowercase() ?: ""
+        if (keywords.any { text.contains(it) }) return true
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i)
+            if (child != null && findTextInNode(child, keywords)) return true
+        }
+        return false
+    }
+
+    private fun findButtonWithText(node: AccessibilityNodeInfo, keywords: List<String>): AccessibilityNodeInfo? {
+        val text = node.text?.toString()?.lowercase() ?: ""
+        if (node.isClickable && keywords.any { text.contains(it) }) return node
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i)
+            val result = child?.let { findButtonWithText(it, keywords) }
+            if (result != null) return result
+        }
+        return null
     }
 
     override fun onInterrupt() {

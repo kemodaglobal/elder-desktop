@@ -231,7 +231,17 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
 
         tts = TextToSpeech(this, this)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
+
         enableEdgeToEdge()
+
+        window.setBackgroundDrawableResource(android.R.color.transparent)
 
         updateOrientationLock()
 
@@ -452,12 +462,12 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
 
     private fun updateOrientationLock() {
         val isLargeScreen = resources.configuration.smallestScreenWidthDp >= 600
-        if (!isLargeScreen) {
+        requestedOrientation = if (!isLargeScreen) {
             // Lock to portrait only on small screens (phones)
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         } else {
             // Allow rotation on large screens (tablets/unfolded foldables)
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 

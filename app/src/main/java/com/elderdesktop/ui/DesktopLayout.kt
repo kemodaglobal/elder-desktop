@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -277,7 +278,7 @@ fun DesktopLayout(
         val pageSize = effectiveRows * colCount
 
         // Page 0: Notifications (Marker: SpeedDial with index -2)
-        if (settings.enableDesktopNotifications) {
+        if (settings.enableDesktopNotifications && !settings.enableFloatingNotifications) {
             finalPages.add((0 until pageSize).map { GridItem.SpeedDial(-2) })
         }
 
@@ -300,13 +301,13 @@ fun DesktopLayout(
         }
 
         val pagerState = rememberPagerState(
-            initialPage = if (settings.enableDesktopNotifications) 2 else 1,
+            initialPage = if (settings.enableDesktopNotifications && !settings.enableFloatingNotifications) 2 else 1,
             pageCount = { finalPages.size }
         )
         val coroutineScope = rememberCoroutineScope()
 
         BackHandler {
-            val target = if (settings.enableDesktopNotifications) 2 else 1
+            val target = if (settings.enableDesktopNotifications && !settings.enableFloatingNotifications) 2 else 1
             if (pagerState.currentPage != target) {
                 coroutineScope.launch { pagerState.animateScrollToPage(target) }
             }
@@ -315,10 +316,11 @@ fun DesktopLayout(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
                 .background(if (isHighContrast) androidx.compose.material3.MaterialTheme.colorScheme.background else Color.Transparent)
-                .padding(insets)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            val coreAppsPageIndex = if (settings.enableDesktopNotifications && !settings.enableFloatingNotifications) 2 else 1
+            Column(modifier = Modifier.fillMaxSize().padding(insets)) {
                 HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { pageIndex ->
                     val pageItems = finalPages[pageIndex]
                     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Top) {
@@ -328,7 +330,6 @@ fun DesktopLayout(
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 // Special case for Widget row on Core Apps page
-                                val coreAppsPageIndex = if (settings.enableDesktopNotifications) 2 else 1
                                 if (pageIndex == coreAppsPageIndex && rowIndex == 0) {
                                     if (!settings.isBasicMode) {
                                         ClockWidget(
