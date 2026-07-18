@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,12 +34,10 @@ import com.elderdesktop.util.WeatherUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
 class WeatherActivity : ComponentActivity() {
 
-    private var weatherResult by mutableStateOf<WeatherUtils.WeatherResult?>(null)
     private val client = OkHttpClient()
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -64,6 +63,7 @@ class WeatherActivity : ComponentActivity() {
         checkLocationPermissions()
         setContent {
             ElderDesktopTheme {
+                val weatherResult = WeatherUtils.cachedWeather
                 Scaffold(
                     topBar = {
                         CenterAlignedTopAppBar(
@@ -73,6 +73,15 @@ class WeatherActivity : ComponentActivity() {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                         contentDescription = stringResource(R.string.back),
+                                        tint = Color.White
+                                    )
+                                }
+                            },
+                            actions = {
+                                IconButton(onClick = { fetchWeatherData() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Refresh",
                                         tint = Color.White
                                     )
                                 }
@@ -137,10 +146,7 @@ class WeatherActivity : ComponentActivity() {
 
         bestLocation?.let { location ->
             CoroutineScope(Dispatchers.IO).launch {
-                val result = WeatherUtils.fetchWeather(location, this@WeatherActivity, client)
-                withContext(Dispatchers.Main) {
-                    weatherResult = result
-                }
+                WeatherUtils.fetchWeather(location, this@WeatherActivity, client)
             }
         }
     }

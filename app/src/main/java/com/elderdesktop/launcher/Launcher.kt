@@ -21,7 +21,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -53,11 +52,6 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
 
     private var weatherJob: Job? = null
-    private var weatherText by mutableStateOf("")
-    private var isWeatherAlert by mutableStateOf(false)
-    private var locationCity by mutableStateOf("")
-    private var currentTemperature by mutableStateOf("")
-    private var weatherCode by mutableIntStateOf(800) // Default clear
 
     private var triggerSettingsUnlock by mutableStateOf(false)
 
@@ -253,15 +247,16 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
                     modifier = Modifier.fillMaxSize(),
                     color = androidx.compose.ui.graphics.Color.Transparent
                 ) {
+                    val weather = WeatherUtils.cachedWeather
                     DesktopLayout(
                         onAppLaunch = { app: AppInfo -> speak(app.label) },
                         onSpeak = { text: String -> speak(text) },
                         onVoiceAssistant = { startVoiceEngine() },
-                        weatherText = weatherText,
-                        isWeatherAlert = isWeatherAlert,
-                        locationCity = locationCity,
-                        currentTemperature = currentTemperature,
-                        weatherCode = weatherCode,
+                        weatherText = weather?.description ?: "",
+                        isWeatherAlert = weather?.isAlert ?: false,
+                        locationCity = weather?.cityName ?: "",
+                        currentTemperature = weather?.formattedTemp ?: "",
+                        weatherCode = weather?.weatherCode ?: 800,
                         triggerSettingsUnlock = triggerSettingsUnlock,
                         onSettingsUnlockHandled = { triggerSettingsUnlock = false },
                         onRefreshWeather = { updateWeather() }
@@ -402,14 +397,7 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
 
                     withContext(Dispatchers.Main) {
                         if (result.errorMessage != null) {
-                            weatherText = result.errorMessage
-                            isWeatherAlert = true
-                        } else {
-                            weatherText = result.description
-                            locationCity = result.cityName
-                            isWeatherAlert = result.isAlert
-                            currentTemperature = result.formattedTemp
-                            weatherCode = result.weatherCode
+                            Toast.makeText(this@Launcher, result.errorMessage, Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
@@ -430,14 +418,7 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
 
                 withContext(Dispatchers.Main) {
                     if (result.errorMessage != null) {
-                        weatherText = result.errorMessage
-                        isWeatherAlert = true
-                    } else {
-                        weatherText = result.description
-                        locationCity = result.cityName
-                        isWeatherAlert = result.isAlert
-                        currentTemperature = result.formattedTemp
-                        weatherCode = result.weatherCode
+                        Toast.makeText(this@Launcher, result.errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {

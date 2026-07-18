@@ -5,6 +5,9 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.elderdesktop.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -17,6 +20,9 @@ import java.util.Locale
 import kotlin.coroutines.resume
 
 object WeatherUtils {
+
+    var cachedWeather by mutableStateOf<WeatherResult?>(null)
+        private set
 
     enum class WeatherType {
         CLEAR, CLOUDY, RAIN, SNOW, ATMOSPHERE, UNKNOWN
@@ -98,21 +104,26 @@ object WeatherUtils {
         client: OkHttpClient
     ): WeatherResult {
         val settings = com.elderdesktop.DesktopSettings(context)
-        return when (settings.weatherProvider) {
+        val result = when (settings.weatherProvider) {
             "qweather" -> {
-                if (settings.weatherApiKey.isEmpty()) return fetchWeatherOpenMeteo(location, context, client)
-                QWeatherUtils.fetchWeather(location, context, settings.weatherApiKey, client).let {
+                if (settings.weatherApiKey.isEmpty()) fetchWeatherOpenMeteo(location, context, client)
+                else QWeatherUtils.fetchWeather(location, context, settings.weatherApiKey, client).let {
                     if (it.cityName.isEmpty()) {
                         it.copy(cityName = getCityName(context, location.latitude, location.longitude))
                     } else it
                 }
             }
             "openweather" -> {
-                if (settings.weatherApiKey.isEmpty()) return fetchWeatherOpenMeteo(location, context, client)
-                OpenWeatherUtils.fetchWeather(location, context, settings.weatherApiKey, client)
+                if (settings.weatherApiKey.isEmpty()) fetchWeatherOpenMeteo(location, context, client)
+                else OpenWeatherUtils.fetchWeather(location, context, settings.weatherApiKey, client)
             }
             else -> fetchWeatherOpenMeteo(location, context, client)
         }
+        
+        if (result.errorMessage == null) {
+            cachedWeather = result
+        }
+        return result
     }
 
     private suspend fun fetchWeatherOpenMeteo(
@@ -221,11 +232,15 @@ object WeatherUtils {
         client: OkHttpClient
     ): WeatherResult {
         val location = getLocationFromCityName(context, cityName)
-        return if (location != null) {
+        val result = if (location != null) {
             fetchWeather(location, context, client)
         } else {
             WeatherResult("", "", false, "", errorMessage = "City not found")
         }
+        if (result.errorMessage == null) {
+            cachedWeather = result
+        }
+        return result
     }
 
     private suspend fun getLocationFromCityName(
