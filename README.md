@@ -19,13 +19,13 @@ This project is strictly open-source and non-commercial. The inclusion of any ad
 
 [X] Supports Android 6.0 and later versions, but does not currently support iOS or HarmonyOS NEXT.
 
-[ ] Supports editing the desktop and moving icons and widgets within the desktop via Settings.
+[X] Supports editing the desktop and moving icons and widgets within the desktop via Settings.
 
-[ ] If loading with the default layout, the setting to display selected apps on the Home screen is checked by default.
+[X] If loading with the default layout, the setting to display selected apps on the Home screen is checked by default.
 
-[ ] Regardless of whether dark mode or light mode is active, the app title should be black if the icon button's background color is close to white, and white if it is close to black.
+[X] Regardless of whether dark mode or light mode is active, the app title should be black if the icon button's background color is close to white, and white if it is close to black.
 
-[ ] 1 x 2 layout support and single-column scrolling
+[X] 1 x 2 layout support and single-column scrolling
 
 ## Warning
 
