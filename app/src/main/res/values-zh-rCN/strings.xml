@@ -10,6 +10,9 @@
     <string name="layout_3x2">3 x 2 布局</string>
     <string name="layout_4x3">4 x 3 布局</string>
     <string name="layout_6x4">6 x 4 布局</string>
+    <string name="layout_1x2">1 x 2 布局</string>
+    <string name="layout_scrolling_single">单列纵向滚动</string>
+    <string name="layout_scrolling_double">双列纵向滚动</string>
     <string name="features">功能</string>
     <string name="voice_assistant_button">语音助手按钮</string>
     <string name="voice_assistant_mode">语音助手模式</string>
@@ -28,6 +31,8 @@
     <string name="cancel">取消</string>
     <string name="no_recent_tasks">未找到最近任务</string>
     <string name="permission_required">需要权限</string>
+    <string name="permission_location_purpose">我们需要您的位置权限来显示当地天气。</string>
+    <string name="permission_contacts_purpose">我们需要访问您的联系人来设置一键拨号列表。</string>
     <string name="usage_access_message">要显示最近任务，请在设置中开启“使用情况访问权限”。</string>
     <string name="open_settings">打开设置</string>
     <string name="passcode_prompt">请输入 4 位数字密码以进入设置。</string>
@@ -45,7 +50,11 @@
     <string name="manage_apps">管理应用</string>
     <string name="select_apps">选择要显示在主屏幕上的应用</string>
     <string name="apps">应用</string>
+    <string name="edit_home_screen">编辑主屏幕</string>
+    <string name="add_item">添加项目</string>
+    <string name="drag_to_reorder">长按拖动以调整图标和组件顺序</string>
     <string name="weather">天气</string>
+    <string name="clock">时钟</string>
     <string name="weather_provider">天气提供商</string>
     <string name="weather_api_key">天气 API 密钥</string>
     <string name="loading">加载中…</string>
@@ -66,6 +75,7 @@
     <string name="weather_error_network">网络错误</string>
     <string name="weather_error_server">服务器错误</string>
     <string name="weather_error_no_data">未收到数据</string>
+    <string name="weather_error_city_not_found">未找到该城市</string>
     <string name="add_location">添加地点</string>
     <string name="select_location">选择地点</string>
     <string name="province">省份</string>
@@ -117,6 +127,9 @@
     <string name="google_ai_api_key">Google AI API 密钥</string>
     <string name="enter_api_key">输入 API 密钥</string>
     <string name="ai_provider">AI 提供商</string>
+    <string name="ai_provider_deepseek">DeepSeek</string>
+    <string name="ai_provider_openai">ChatGPT</string>
+    <string name="ai_provider_google">Google AI (Gemini)</string>
     <string name="ai_chat">AI 对话</string>
     <string name="ai_chat_desc">通过语音与 AI 助手对话</string>
     <string name="notification_permission_required">需要通知访问权限</string>
@@ -146,6 +159,9 @@
     <string name="font_default">系统默认</string>
     <string name="font_serif">衬线体 (端庄)</string>
     <string name="font_monospace">等宽体 (整洁)</string>
+    <string name="ui_style_selection">UI 设计风格</string>
+    <string name="ui_style_modern">现代风格 (Material 3)</string>
+    <string name="ui_style_holo">经典风格 (Holo UI)</string>
     <string name="about">关于</string>
     <string name="about_desc">查看版本和构建信息</string>
     <string name="privacy_policy">隐私政策</string>

@@ -1,14 +1,35 @@
 package com.elderdesktop.util
 
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.provider.MediaStore
-import android.widget.Toast
 import com.elderdesktop.model.AppInfo
 import com.elderdesktop.model.AppType
 
 object AppUtils {
+
+    fun generateDefaultLayout(context: Context, allLaunchable: List<AppInfo>): List<String> {
+        return LayoutUtils.generateDefaultLayout(context, allLaunchable)
+    }
+
+    fun launchApp(context: Context, app: AppInfo) {
+        AppLauncher.launchApp(context, app)
+    }
+
+    fun launchCamera(context: Context) {
+        AppLauncher.launchCamera(context)
+    }
+
+    fun launchDialer(context: Context) {
+        AppLauncher.launchDialer(context)
+    }
+
+    fun launchContacts(context: Context) {
+        AppLauncher.launchContacts(context)
+    }
+
+    fun launchSystemAssistant(context: Context) {
+        AppLauncher.launchSystemAssistant(context)
+    }
 
     fun getLaunchableApps(context: Context): List<AppInfo> {
         val pm = context.packageManager
@@ -24,148 +45,6 @@ object AppUtils {
                 icon = info.loadIcon(pm)
             )
         }.sortedBy { it.label.lowercase() }
-    }
-
-    fun launchApp(context: Context, app: AppInfo) {
-        // Special handling for Xiaomi MIUI/HyperOS where Phone and Contacts share a package
-        if (app.packageName == "com.android.contacts") {
-            val phoneKeywords = context.getString(com.elderdesktop.R.string.keyword_call).split(",")
-            val contactKeywords = context.getString(com.elderdesktop.R.string.keyword_contacts).split(",")
-
-            val specialClassName = when {
-                phoneKeywords.any { app.label.contains(it, ignoreCase = true) } -> 
-                    "com.android.contacts.activities.TwelveKeyDialer"
-                contactKeywords.any { app.label.contains(it, ignoreCase = true) } ->
-                    "com.android.contacts.activities.PeopleActivity"
-                else -> null
-            }
-            
-            if (specialClassName != null) {
-                val intent = Intent(Intent.ACTION_MAIN).apply {
-                    addCategory(Intent.CATEGORY_LAUNCHER)
-                    component = ComponentName(app.packageName, specialClassName)
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                }
-                try {
-                    context.startActivity(intent)
-                    return
-                } catch (_: Exception) {
-                    // Fallback to normal launch if special activity fails
-                }
-            }
-        }
-
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-            component = ComponentName(app.packageName, app.className)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-        }
-        try {
-            context.startActivity(intent)
-        } catch (_: Exception) {
-            context.packageManager.getLaunchIntentForPackage(app.packageName)?.let {
-                context.startActivity(it)
-            }
-        }
-    }
-
-    fun launchCamera(context: Context) {
-        val intent = Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try { context.startActivity(intent) } catch (_: Exception) { }
-    }
-
-    fun launchDialer(context: Context) {
-        // Preference for Xiaomi MIUI/HyperOS specific dialer
-        val miuiIntent = Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName("com.android.contacts", "com.android.contacts.activities.TwelveKeyDialer")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(miuiIntent)
-        } catch (_: Exception) {
-            val dialIntent = Intent(Intent.ACTION_DIAL).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            try { context.startActivity(dialIntent) } catch (_: Exception) { }
-        }
-    }
-
-    fun launchContacts(context: Context) {
-        // Preference for Xiaomi MIUI/HyperOS specific contacts
-        val miuiIntent = Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName("com.android.contacts", "com.android.contacts.activities.PeopleActivity")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(miuiIntent)
-        } catch (_: Exception) {
-            val contactsIntent = Intent(Intent.ACTION_VIEW).apply {
-                type = "vnd.android.cursor.dir/contact"
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            try { context.startActivity(contactsIntent) } catch (_: Exception) { }
-        }
-    }
-
-    fun launchSystemAssistant(context: Context) {
-        // 1. Try the official Android "Assist" shortcut (Most universal)
-        // This will launch whatever the user has set as their "Default Assistant"
-        // (e.g. Google Assistant, Bixby, Xiao Ai, etc.)
-        val assistIntent = Intent(Intent.ACTION_ASSIST).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(assistIntent)
-            return
-        } catch (_: Exception) { }
-
-        // 2. Try Xiaomi Hyper AI (Xiao Ai) specific service
-        val xiaoAiIntent = Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName("com.miui.voiceassist", "com.miui.voiceassist.VoiceService")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(xiaoAiIntent)
-            return
-        } catch (_: Exception) {
-            val xiaoAiGeneral = context.packageManager.getLaunchIntentForPackage("com.miui.voiceassist")
-            if (xiaoAiGeneral != null) {
-                context.startActivity(xiaoAiGeneral)
-                return
-            }
-        }
-
-        // 3. Try Standard Voice Command
-        val voiceCommandIntent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(voiceCommandIntent)
-            return
-        } catch (_: Exception) { }
-
-        // 4. Try Google App Search
-        val googleSearchIntent = Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName("com.google.android.googlequicksearchbox", "com.google.android.googlequicksearchbox.VoiceSearchActivity")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(googleSearchIntent)
-            return
-        } catch (_: Exception) { }
-
-        // 5. Fallback to Web Search
-        val searchIntent = Intent(Intent.ACTION_WEB_SEARCH).apply {
-            putExtra("query", "")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(searchIntent)
-        } catch (_: Exception) {
-            Toast.makeText(context, context.getString(com.elderdesktop.R.string.unable_to_start_voice_assistant), Toast.LENGTH_SHORT).show()
-        }
     }
 
     fun getFirstScreenPackageMap(): Map<AppType, List<String>> = mapOf(

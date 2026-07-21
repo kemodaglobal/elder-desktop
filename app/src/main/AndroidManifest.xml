@@ -101,6 +101,16 @@
             tools:ignore="DiscouragedApi">
         </activity>
 
+        <activity
+            android:name=".launcher.EditDesktopActivity"
+            android:exported="false"
+            android:label="@string/edit_home_screen"
+            android:screenOrientation="unspecified"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar"
+            tools:ignore="DiscouragedApi">
+        </activity>
+
         <receiver
             android:name=".BootReceiver"
             android:enabled="true"

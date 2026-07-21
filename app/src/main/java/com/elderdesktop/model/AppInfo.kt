@@ -18,6 +18,7 @@ enum class AppType {
 sealed class GridItem {
     data class App(val info: AppInfo) : GridItem()
     data class SpeedDial(val index: Int) : GridItem()
+    data object ClockWidget : GridItem()
 }
 
 data class DesktopConfig(

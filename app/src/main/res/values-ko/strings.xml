@@ -10,6 +10,9 @@
     <string name="layout_3x2">3 x 2 레이아웃</string>
     <string name="layout_4x3">4 x 3 레이아웃</string>
     <string name="layout_6x4">6 x 4 레이아웃</string>
+    <string name="layout_1x2">1 x 2 레이아웃</string>
+    <string name="layout_scrolling_single">1열 세로 스크롤</string>
+    <string name="layout_scrolling_double">2열 세로 스크롤</string>
     <string name="features">기능</string>
     <string name="voice_assistant_button">음성 비서 버튼</string>
     <string name="voice_assistant_mode">음성 비서 모드</string>
@@ -28,6 +31,8 @@
     <string name="cancel">취소</string>
     <string name="no_recent_tasks">최근 작업이 없습니다</string>
     <string name="permission_required">권한 필요</string>
+    <string name="permission_location_purpose">현재 지역의 날씨를 표시하려면 위치 권한이 필요합니다.</string>
+    <string name="permission_contacts_purpose">단축 다이얼 목록을 설정하려면 연락처 접근 권한이 필요합니다.</string>
     <string name="usage_access_message">최근 작업을 보려면 설정에서 사용 정보 접근 권한을 허용해 주세요.</string>
     <string name="open_settings">설정 열기</string>
     <string name="passcode_prompt">설정에 접근하려면 4자리 비밀번호를 입력해 주세요.</string>
@@ -45,7 +50,11 @@
     <string name="manage_apps">앱 관리</string>
     <string name="select_apps">홈 화면에 표시할 앱 선택</string>
     <string name="apps">앱</string>
+    <string name="edit_home_screen">홈 화면 편집</string>
+    <string name="add_item">항목 추가</string>
+    <string name="drag_to_reorder">아이콘과 위젯을 길게 눌러 순서를 변경하세요</string>
     <string name="weather">날씨</string>
+    <string name="clock">시계</string>
     <string name="weather_provider">날씨 제공업체</string>
     <string name="weather_api_key">날씨 API 키</string>
     <string name="loading">로딩 중…</string>
@@ -66,6 +75,7 @@
     <string name="weather_error_network">네트워크 오류</string>
     <string name="weather_error_server">서버 오류</string>
     <string name="weather_error_no_data">데이터를 받지 못했습니다</string>
+    <string name="weather_error_city_not_found">도시를 찾을 수 없습니다</string>
     <string name="add_location">위치 추가</string>
     <string name="select_location">위치 선택</string>
     <string name="province">도/광역시</string>
@@ -116,7 +126,12 @@
     <string name="openai_api_key">OpenAI API 키</string>
     <string name="google_ai_api_key">Google AI API 키</string>
     <string name="enter_api_key">API 키 입력</string>
-    <string name="ai_chat_desc">음성으로 AI 비서와 대화하세요.</string>
+    <string name="ai_provider">AI 공급업체</string>
+    <string name="ai_provider_deepseek">DeepSeek</string>
+    <string name="ai_provider_openai">ChatGPT</string>
+    <string name="ai_provider_google">Google AI (Gemini)</string>
+    <string name="ai_chat">AI 채팅</string>
+    <string name="ai_chat_desc">음성으로 AI 비서와 대화하세요</string>
     <string name="notification_permission_required">알림 접근 권한 필요</string>
     <string name="notification_permission_desc">데스크톱에 알림을 표시하려면 시스템 알림 설정에서 \"어르신 데스크톱\"을 활성화해 주세요.</string>
     <string name="overlay_permission_required">다른 앱 위에 표시 권한 필요</string>
@@ -144,6 +159,9 @@
     <string name="font_default">시스템 기본값</string>
     <string name="font_serif">바탕체 (단정함)</string>
     <string name="font_monospace">고딕체 (깔끔함)</string>
+    <string name="ui_style_selection">UI 디자인 스타일</string>
+    <string name="ui_style_modern">현대식 (Material 3)</string>
+    <string name="ui_style_holo">클래식 (Holo UI)</string>
     <string name="about">정보</string>
     <string name="about_desc">버전 및 빌드 정보 보기</string>
     <string name="privacy_policy">개인정보 처리방침</string>
@@ -160,7 +178,7 @@
         - &lt;b&gt;연락처:&lt;/b&gt; 단축 다이얼 바로가기를 표시하고 연락처 정보를 가져오는 데 사용됩니다.&lt;br/&gt;
         - &lt;b&gt;알림:&lt;/b&gt; 데스크톱에 수신 메시지를 표시하는 데 사용됩니다.&lt;br/&gt;
         - &lt;b&gt;사진:&lt;/b&gt; 연락처 프로필 사진을 설정하는 데만 사용됩니다.&lt;br/&gt;
-        - &lt;b&gt;무료 접근성 서비스:&lt;/b&gt; „오터치 방지 모드“를 위해 화면 가장자리 상호작용을 차단하는 데만 사용됩니다. 어떠한 데이터도 수집하거나 업로드하지 않습니다.&lt;br/&gt;&lt;br/&gt;
+        - &lt;b&gt;접근성 서비스:&lt;/b&gt; „오터치 방지 모드“를 위해 화면 가장자리 상호작용을 차단하는 데만 사용됩니다. 어떠한 데이터도 수집하거나 업로드하지 않습니다.&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;3. 광고 없음:&lt;/b&gt; 이 앱은 엄격히 비상업적이며 광고 SDK를 포함하지 않습니다.&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;4. 오픈 소스:&lt;/b&gt; GitHub/GitLab에서 소스 코드를 검토하여 데이터 처리 로직을 확인할 수 있습니다.
     </string>
@@ -182,6 +200,4 @@
     <string name="keyword_call">전화,발신,call</string>
     <string name="keyword_call_prefix">에게 전화</string>
     <string name="keyword_contacts">연락처,contacts</string>
-    <string name="ai_provider">AI 공급업체</string>
-    <string name="ai_chat">AI 채팅</string>
 </resources>

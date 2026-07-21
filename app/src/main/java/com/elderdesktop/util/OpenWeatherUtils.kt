@@ -3,6 +3,7 @@ package com.elderdesktop.util
 import android.content.Context
 import android.location.Location
 import android.util.Log
+import com.elderdesktop.model.WeatherResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -18,9 +19,9 @@ object OpenWeatherUtils {
         context: Context,
         apiKey: String,
         client: OkHttpClient
-    ): WeatherUtils.WeatherResult {
+    ): WeatherResult {
         if (apiKey.isEmpty()) {
-            return WeatherUtils.WeatherResult(
+            return WeatherResult(
                 description = "",
                 cityName = "",
                 isAlert = false,
@@ -47,7 +48,7 @@ object OpenWeatherUtils {
                         
                         val isHighTemp = temp >= 35
 
-                        return@withContext WeatherUtils.WeatherResult(
+                        return@withContext WeatherResult(
                             description = description,
                             cityName = json.getString("name"),
                             isAlert = isHighTemp,
@@ -62,13 +63,13 @@ object OpenWeatherUtils {
                         in 500..599 -> com.elderdesktop.R.string.weather_error_server
                         else -> com.elderdesktop.R.string.weather_error_network
                     }
-                    return@withContext WeatherUtils.WeatherResult("", "", false, "", errorMessage = context.getString(errorResId))
+                    return@withContext WeatherResult("", "", false, "", errorMessage = context.getString(errorResId))
                 }
             } catch (e: Exception) {
                 Log.e("OpenWeatherUtils", "Error fetching OpenWeatherMap", e)
-                return@withContext WeatherUtils.WeatherResult("", "", false, "", errorMessage = e.localizedMessage)
+                return@withContext WeatherResult("", "", false, "", errorMessage = e.localizedMessage)
             }
-            WeatherUtils.WeatherResult("", "", false, "", errorMessage = context.getString(com.elderdesktop.R.string.weather_error_no_data))
+            WeatherResult("", "", false, "", errorMessage = context.getString(com.elderdesktop.R.string.weather_error_no_data))
         }
     }
 }

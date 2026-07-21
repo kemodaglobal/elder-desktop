@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Senioren-Wetter</string>
+    <string name="temperature">Temperatur</string>
+    <string name="unit_c">°C</string>
+    <string name="unit_f">°F</string>
+    <string name="loading">Laden…</string>
+    <string name="city">Stadt</string>
+    <string name="description">Beschreibung</string>
+    <string name="weather_clear">Klar</string>
+    <string name="weather_partly_cloudy">Teilweise bewölkt</string>
+    <string name="weather_fog">Nebel</string>
+    <string name="weather_drizzle">Nieselregen</string>
+    <string name="weather_rain">Regen</string>
+    <string name="weather_snow">Schnee</string>
+    <string name="weather_rain_showers">Regenschauer</string>
+    <string name="weather_thunderstorm">Gewitter</string>
+    <string name="weather_cloudy">Bewölkt</string>
+    <string name="weather_error">Wetterfehler: %1$s</string>
+    <string name="weather_error_auth">Authentifizierung fehlgeschlagen</string>
+    <string name="weather_error_limit">Ratenlimit überschritten</string>
+    <string name="weather_error_network">Netzwerkfehler</string>
+    <string name="weather_error_server">Serverfehler</string>
+    <string name="weather_error_no_data">Keine Daten empfangen</string>
+</resources>

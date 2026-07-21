@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">어르신 날씨</string>
+    <string name="temperature">온도</string>
+    <string name="unit_c">°C</string>
+    <string name="unit_f">°F</string>
+    <string name="loading">로딩 중…</string>
+    <string name="city">도시</string>
+    <string name="description">설명</string>
+    <string name="weather_clear">맑음</string>
+    <string name="weather_partly_cloudy">구름 조금</string>
+    <string name="weather_fog">안개</string>
+    <string name="weather_drizzle">이슬비</string>
+    <string name="weather_rain">비</string>
+    <string name="weather_snow">눈</string>
+    <string name="weather_rain_showers">소나기</string>
+    <string name="weather_thunderstorm">뇌우</string>
+    <string name="weather_cloudy">흐림</string>
+    <string name="weather_error">날씨 오류: %1$s</string>
+    <string name="weather_error_auth">인증 실패</string>
+    <string name="weather_error_limit">요청 한도 초과</string>
+    <string name="weather_error_network">네트워크 오류</string>
+    <string name="weather_error_server">서버 오류</string>
+    <string name="weather_error_no_data">데이터를 받지 못했습니다</string>
+</resources>

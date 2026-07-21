@@ -10,6 +10,9 @@
     <string name="layout_3x2">3 x 2 レイアウト</string>
     <string name="layout_4x3">4 x 3 レイアウト</string>
     <string name="layout_6x4">6 x 4 レイアウト</string>
+    <string name="layout_1x2">1 x 2 レイアウト</string>
+    <string name="layout_scrolling_single">1列縦スクロール</string>
+    <string name="layout_scrolling_double">2列縦スクロール</string>
     <string name="features">機能</string>
     <string name="voice_assistant_button">音声アシスタントボタン</string>
     <string name="voice_assistant_mode">音声アシスタントモード</string>
@@ -28,6 +31,8 @@
     <string name="cancel">キャンセル</string>
     <string name="no_recent_tasks">最近のタスクは見つかりませんでした</string>
     <string name="permission_required">権限が必要です</string>
+    <string name="permission_location_purpose">地元の天気を表示するために、位置情報の許可が必要です。</string>
+    <string name="permission_contacts_purpose">短縮ダイヤルリストを設定するために、連絡先へのアクセスが必要です。</string>
     <string name="usage_access_message">最近のタスクを表示するには、設定で「使用状況へのアクセス」を有効にしてください。</string>
     <string name="open_settings">設定を開く</string>
     <string name="passcode_prompt">設定にアクセスするには4桁のパスコードを入力してください。</string>
@@ -45,7 +50,11 @@
     <string name="manage_apps">アプリの管理</string>
     <string name="select_apps">ホーム画面に表示するアプリを選択</string>
     <string name="apps">アプリ</string>
+    <string name="edit_home_screen">ホーム画面を編集</string>
+    <string name="add_item">項目を追加</string>
+    <string name="drag_to_reorder">長押ししてアイコンやウィジェットを並べ替えます</string>
     <string name="weather">天気</string>
+    <string name="clock">時計</string>
     <string name="weather_provider">天気提供元</string>
     <string name="weather_api_key">天気 API キー</string>
     <string name="loading">読み込み中…</string>
@@ -66,6 +75,7 @@
     <string name="weather_error_network">ネットワークエラー</string>
     <string name="weather_error_server">サーバーエラー</string>
     <string name="weather_error_no_data">データを受信できませんでした</string>
+    <string name="weather_error_city_not_found">都市が見つかりませんでした</string>
     <string name="add_location">場所を追加</string>
     <string name="select_location">場所を選択</string>
     <string name="province">都道府県</string>
@@ -116,6 +126,11 @@
     <string name="openai_api_key">OpenAI APIキー</string>
     <string name="google_ai_api_key">Google AI APIキー</string>
     <string name="enter_api_key">API キーを入力</string>
+    <string name="ai_provider">AIプロバイダー</string>
+    <string name="ai_provider_deepseek">DeepSeek</string>
+    <string name="ai_provider_openai">ChatGPT</string>
+    <string name="ai_provider_google">Google AI (Gemini)</string>
+    <string name="ai_chat">AIチャット</string>
     <string name="ai_chat_desc">音声でAIアシスタントと会話する</string>
     <string name="notification_permission_required">通知へのアクセスが必要です</string>
     <string name="notification_permission_desc">デスクトップに通知を表示するには、システム設定で「シニアデスクトップ」を有効にしてください。</string>
@@ -144,6 +159,9 @@
     <string name="font_default">システムデフォルト</string>
     <string name="font_serif">セリフ (フォーマル)</string>
     <string name="font_monospace">等幅フォント (クリア)</string>
+    <string name="ui_style_selection">UIデザインスタイル</string>
+    <string name="ui_style_modern">モダン (Material 3)</string>
+    <string name="ui_style_holo">クラシック (Holo UI)</string>
     <string name="about">バージョン情報</string>
     <string name="about_desc">バージョンとビルド情報を表示</string>
     <string name="privacy_policy">プライバシーポリシー</string>
@@ -160,7 +178,7 @@
         - &lt;b&gt;連絡先:&lt;/b&gt; スピードダイヤルのショートカットを表示し、連絡先情報をインポートするために使用されます。&lt;br/&gt;
         - &lt;b&gt;通知:&lt;/b&gt; デスクトップに着信メッセージを表示するために使用されます。&lt;br/&gt;
         - &lt;b&gt;写真:&lt;/b&gt; 連絡先のプロフィール写真を設定するためにのみ使用されます。&lt;br/&gt;
-        - &lt;b&gt;無障碍サービス:&lt;/b&gt; 「誤タッチ防止モード」として画面端の操作をブロックするためにのみ使用されます。データの収集やアップロードは一切行いません。&lt;br/&gt;&lt;br/&gt;
+        - &lt;b&gt;アクセシビリティサービス:&lt;/b&gt; 「誤タッチ防止モード」として画面端の操作をブロックするためにのみ使用されます。データの収集やアップロードは一切行いません。&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;3. 広告なし:&lt;/b&gt; このアプリは厳密に非営利目的であり、広告SDKは含まれていません。&lt;br/&gt;&lt;br/&gt;
         &lt;b&gt;4. オープンソース:&lt;/b&gt; GitHub/GitLabのソースコードを確認することで、私たちのデータ処理ロジックを検証できます。
     </string>
@@ -182,6 +200,4 @@
     <string name="keyword_call">電話,発信,call</string>
     <string name="keyword_call_prefix">に電話</string>
     <string name="keyword_contacts">連絡先,contacts</string>
-    <string name="ai_provider">AIプロバイダー</string>
-    <string name="ai_chat">AIチャット</string>
 </resources>

@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">シニア天気</string>
+    <string name="temperature">温度</string>
+    <string name="unit_c">°C</string>
+    <string name="unit_f">°F</string>
+    <string name="loading">読み込み中…</string>
+    <string name="city">市区町村</string>
+    <string name="description">詳細</string>
+    <string name="weather_clear">快晴</string>
+    <string name="weather_partly_cloudy">時々曇り</string>
+    <string name="weather_fog">霧</string>
+    <string name="weather_drizzle">霧雨</string>
+    <string name="weather_rain">雨</string>
+    <string name="weather_snow">雪</string>
+    <string name="weather_rain_showers">にわか雨</string>
+    <string name="weather_thunderstorm">雷雨</string>
+    <string name="weather_cloudy">曇り</string>
+    <string name="weather_error">天気エラー: %1$s</string>
+    <string name="weather_error_auth">認証に失敗しました</string>
+    <string name="weather_error_limit">レート制限を超えました</string>
+    <string name="weather_error_network">ネットワークエラー</string>
+    <string name="weather_error_server">サーバーエラー</string>
+    <string name="weather_error_no_data">データを受信できませんでした</string>
+</resources>

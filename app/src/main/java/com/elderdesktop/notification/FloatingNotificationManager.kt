@@ -37,7 +37,7 @@ object FloatingNotificationManager {
         val btnOpen = view.findViewById<Button>(R.id.btn_open)
 
         val extras = sbn.notification.extras
-        titleView.text = extras.getString("android.title") ?: "Notification"
+        titleView.text = extras.getString("android.title") ?: context.getString(R.string.notification_default)
         textView.text = extras.getCharSequence("android.text")?.toString() ?: ""
 
         btnClose.setOnClickListener {

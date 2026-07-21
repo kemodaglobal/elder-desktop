@@ -55,6 +55,18 @@ class DesktopSettings(context: Context) {
         get() = prefs.getBoolean("intercept_spam_calls", false)
         set(value) = prefs.edit { putBoolean("intercept_spam_calls", value) }
 
+    var uiStyle: String
+        get() = prefs.getString("ui_style", "modern") ?: "modern" // modern, holo
+        set(value) = prefs.edit { putString("ui_style", value) }
+
+    var layoutOrder: List<String>
+        get() = (prefs.getString("layout_order", null) ?: "").let { if (it.isEmpty()) emptyList() else it.split(",") }
+        set(value) = prefs.edit { putString("layout_order", value.joinToString(",")) }
+
+    var isScrollingMode: Boolean
+        get() = prefs.getBoolean("is_scrolling_mode", false)
+        set(value) = prefs.edit { putBoolean("is_scrolling_mode", value) }
+
     var showVoiceAssistant: Boolean
         get() = prefs.getBoolean("show_voice_assistant", false)
         set(value) = prefs.edit { putBoolean("show_voice_assistant", value) }
@@ -221,9 +233,28 @@ class DesktopSettings(context: Context) {
         layoutCols = 6
     }
     
+    fun use1x2() {
+        layoutRows = 3
+        layoutCols = 1
+        isScrollingMode = false
+    }
+
+    fun useSingleColumnScrolling() {
+        layoutCols = 1
+        isScrollingMode = true
+    }
+
+    fun useDoubleColumnScrolling() {
+        layoutCols = 2
+        isScrollingMode = true
+    }
+    
     val is2x3: Boolean get() = layoutCols == 2 && layoutRows == 4
     val is3x4: Boolean get() = layoutCols == 3 && layoutRows == 5
     val is3x2: Boolean get() = layoutCols == 3 && layoutRows == 3
     val is4x3: Boolean get() = layoutCols == 4 && layoutRows == 4
     val is6x4: Boolean get() = layoutCols == 6 && layoutRows == 5
+    val is1x2: Boolean get() = layoutCols == 1 && layoutRows == 3 && !isScrollingMode
+    val isSingleColScrolling: Boolean get() = layoutCols == 1 && isScrollingMode
+    val isDoubleColScrolling: Boolean get() = layoutCols == 2 && isScrollingMode
 }

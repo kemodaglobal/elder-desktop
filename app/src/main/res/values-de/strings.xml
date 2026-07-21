@@ -10,6 +10,9 @@
     <string name="layout_3x2">3 x 2 Layout</string>
     <string name="layout_4x3">4 x 3 Layout</string>
     <string name="layout_6x4">6 x 4 Layout</string>
+    <string name="layout_1x2">1 x 2 Layout</string>
+    <string name="layout_scrolling_single">Einspaltiges Scrollen</string>
+    <string name="layout_scrolling_double">Zweispaltiges Scrollen</string>
     <string name="features">Funktionen</string>
     <string name="voice_assistant_button">Sprachassistent-Button</string>
     <string name="voice_assistant_mode">Sprachassistent-Modus</string>
@@ -28,6 +31,8 @@
     <string name="cancel">Abbrechen</string>
     <string name="no_recent_tasks">Keine letzten Aufgaben gefunden</string>
     <string name="permission_required">Berechtigung erforderlich</string>
+    <string name="permission_location_purpose">Wir benötigen Ihren Standort, um das lokale Wetter anzuzeigen.</string>
+    <string name="permission_contacts_purpose">Wir benötigen Zugriff auf Ihre Kontakte, um Ihre Kurzwahlliste einzurichten.</string>
     <string name="usage_access_message">Um letzte Aufgaben anzuzeigen, aktivieren Sie bitte den Nutzungsdatenzugriff in den Einstellungen.</string>
     <string name="open_settings">Einstellungen öffnen</string>
     <string name="passcode_prompt">Bitte geben Sie den 4-stelligen Passcode ein, um auf die Einstellungen zuzugreifen.</string>
@@ -45,7 +50,11 @@
     <string name="manage_apps">Apps verwalten</string>
     <string name="select_apps">Apps für den Startbildschirm auswählen</string>
     <string name="apps">Apps</string>
+    <string name="edit_home_screen">Startbildschirm bearbeiten</string>
+    <string name="add_item">Element hinzufügen</string>
+    <string name="drag_to_reorder">Zum Neuanordnen von Icons und Widgets ziehen</string>
     <string name="weather">Wetter</string>
+    <string name="clock">Uhr</string>
     <string name="weather_provider">Wetteranbieter</string>
     <string name="weather_api_key">Wetter-API-Schlüssel</string>
     <string name="loading">Laden…</string>
@@ -66,6 +75,7 @@
     <string name="weather_error_network">Netzwerkfehler</string>
     <string name="weather_error_server">Serverfehler</string>
     <string name="weather_error_no_data">Keine Daten empfangen</string>
+    <string name="weather_error_city_not_found">Stadt nicht gefunden</string>
     <string name="add_location">Standort hinzufügen</string>
     <string name="select_location">Standort wählen</string>
     <string name="province">Bundesland/Provinz</string>
@@ -110,11 +120,17 @@
     <string name="grant">Gewähren</string>
     <string name="unauthorized_sdk_warning">Unbefugtes Werbe-SDK erkannt. Bitte verwenden Sie die originale Open-Source-Version.</string>
     <string name="notification_default">Benachrichtigung</string>
-    <string name="deepseek_chat">DeepSeek Chat</string>
-    <string name="deepseek_chat_desc">Mit DeepSeek AI per Sprache chatten</string>
-    <string name="deepseek_api_key">DeepSeek API-Schlüssel</string>
+    <string name="deepseek_chat">DeepSeek-Chat</string>
+    <string name="deepseek_chat_desc">Per Sprache mit der DeepSeek-KI chatten</string>
+    <string name="deepseek_api_key">DeepSeek-API-Schlüssel</string>
+    <string name="openai_api_key">OpenAI-API-Schlüssel</string>
     <string name="google_ai_api_key">Google AI API-Schlüssel</string>
     <string name="enter_api_key">API-Schlüssel eingeben</string>
+    <string name="ai_provider">KI-Anbieter</string>
+    <string name="ai_provider_deepseek">DeepSeek</string>
+    <string name="ai_provider_openai">ChatGPT</string>
+    <string name="ai_provider_google">Google AI (Gemini)</string>
+    <string name="ai_chat">KI-Chat</string>
     <string name="ai_chat_desc">Per Sprache mit dem KI-Assistenten chatten</string>
     <string name="notification_permission_required">Benachrichtigungszugriff erforderlich</string>
     <string name="notification_permission_desc">Um Benachrichtigungen auf dem Desktop anzuzeigen, aktivieren Sie bitte „Senioren-Desktop“ in den System-Benachrichtigungseinstellungen.</string>
@@ -143,6 +159,9 @@
     <string name="font_default">Systemstandard</string>
     <string name="font_serif">Serife (Formal)</string>
     <string name="font_monospace">Monospace (Klar)</string>
+    <string name="ui_style_selection">UI-Design-Stil</string>
+    <string name="ui_style_modern">Modern (Material 3)</string>
+    <string name="ui_style_holo">Klassisch (Holo UI)</string>
     <string name="about">Über</string>
     <string name="about_desc">Version und Build-Informationen anzeigen</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
@@ -181,7 +200,4 @@
     <string name="keyword_call">anrufen,wählen,call</string>
     <string name="keyword_call_prefix">rufe an </string>
     <string name="keyword_contacts">Kontakte,contacts</string>
-    <string name="openai_api_key">OpenAI-API-Schlüssel</string>
-    <string name="ai_provider">KI-Anbieter</string>
-    <string name="ai_chat">KI-Chat</string>
 </resources>

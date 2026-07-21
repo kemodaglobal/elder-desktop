@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cloud
@@ -42,10 +41,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elderdesktop.R
+import com.elderdesktop.model.WeatherType
+import com.elderdesktop.ui.theme.HoloBlue
+import com.elderdesktop.util.TimeUtils
+import com.elderdesktop.util.WeatherUtils
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
 @SuppressLint("DefaultLocale")
@@ -76,21 +78,22 @@ fun ClockWidget(
 
     val context = LocalContext.current
     val locale = LocalLocale.current.platformLocale
-    val marker = getTimeOfDayMarker(context, locale, hour24)
+    val marker = TimeUtils.getTimeOfDayMarker(context, locale, hour24)
 
     val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
     val isHighContrast = MaterialTheme.colorScheme.surface == Color.Black
+    val isHolo = MaterialTheme.colorScheme.primary == HoloBlue
 
     val isDay = hour24 in 6..18
-    val weatherType = com.elderdesktop.util.WeatherUtils.getWeatherType(weatherCode)
+    val weatherType = WeatherUtils.getWeatherType(weatherCode)
 
-    val widgetBackgroundColor = if (isHighContrast) MaterialTheme.colorScheme.surface
+    val widgetBackgroundColor = if (isHighContrast || isHolo) MaterialTheme.colorScheme.surface
     else when (weatherType) {
-        com.elderdesktop.util.WeatherUtils.WeatherType.CLEAR -> if (isDay) Color(0xFF87CEEB) else Color(0xFF1A237E)
-        com.elderdesktop.util.WeatherUtils.WeatherType.CLOUDY,
-        com.elderdesktop.util.WeatherUtils.WeatherType.RAIN,
-        com.elderdesktop.util.WeatherUtils.WeatherType.SNOW,
-        com.elderdesktop.util.WeatherUtils.WeatherType.ATMOSPHERE -> if (isDay) Color(0xFFBDBDBD) else Color(0xFF424242)
+        WeatherType.CLEAR -> if (isDay) Color(0xFF87CEEB) else Color(0xFF1A237E)
+        WeatherType.CLOUDY,
+        WeatherType.RAIN,
+        WeatherType.SNOW,
+        WeatherType.ATMOSPHERE -> if (isDay) Color(0xFFBDBDBD) else Color(0xFF424242)
         else -> Color(0xFF1A5F7A)
     }
 
@@ -98,10 +101,10 @@ fun ClockWidget(
         modifier = modifier
             .clickable { onClick() }
             .then(
-                if (isHighContrast) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+                if (isHighContrast || isHolo) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.medium)
                 else Modifier
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = widgetBackgroundColor.copy(alpha = 0.9f)
         )
@@ -181,25 +184,25 @@ fun ClockWidget(
 }
 
 @Composable
-fun WeatherIcon(type: com.elderdesktop.util.WeatherUtils.WeatherType, isDay: Boolean) {
+fun WeatherIcon(type: WeatherType, isDay: Boolean) {
     when (type) {
-        com.elderdesktop.util.WeatherUtils.WeatherType.CLEAR -> {
+        WeatherType.CLEAR -> {
             if (isDay) {
                 Icon(Icons.Default.WbSunny, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.Yellow)
             } else {
                 Icon(Icons.Default.NightsStay, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.White)
             }
         }
-        com.elderdesktop.util.WeatherUtils.WeatherType.CLOUDY -> {
+        WeatherType.CLOUDY -> {
             Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.White)
         }
-        com.elderdesktop.util.WeatherUtils.WeatherType.RAIN -> {
+        WeatherType.RAIN -> {
             Box(contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.DarkGray)
                 Icon(Icons.Default.Grain, contentDescription = null, modifier = Modifier.size(30.dp).padding(top = 20.dp), tint = Color.Cyan)
             }
         }
-        com.elderdesktop.util.WeatherUtils.WeatherType.SNOW -> {
+        WeatherType.SNOW -> {
             Icon(Icons.Default.Grain, contentDescription = null, modifier = Modifier.size(50.dp), tint = Color.White)
         }
         else -> {
@@ -208,91 +211,6 @@ fun WeatherIcon(type: com.elderdesktop.util.WeatherUtils.WeatherType, isDay: Boo
     }
 }
 
-@SuppressLint("DefaultLocale")
-@Composable
-fun SimpleClockWidget(
-    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
-    fontSizeMultiplier: Float = 1.0f,
-    weatherCode: Int = 800
-) {
-    var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
+// SimpleClockWidget has been moved to its own file.
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            currentTime = Calendar.getInstance()
-            delay(1000.milliseconds)
-        }
-    }
-
-    val hour24 = currentTime.get(Calendar.HOUR_OF_DAY)
-    val hour12 = currentTime.get(Calendar.HOUR).let { if (it == 0) 12 else it }
-    val minute = String.format("%02d", currentTime.get(Calendar.MINUTE))
-
-    val context = LocalContext.current
-    val locale = LocalLocale.current.platformLocale
-    val marker = getTimeOfDayMarker(context, locale, hour24)
-
-    val dateString = SimpleDateFormat("M/d/yyyy EEEE", locale).format(currentTime.time)
-    val isHighContrast = MaterialTheme.colorScheme.surface == Color.Black
-
-    val isDay = hour24 in 6..18
-    val weatherType = com.elderdesktop.util.WeatherUtils.getWeatherType(weatherCode)
-
-    val widgetBackgroundColor = if (isHighContrast) MaterialTheme.colorScheme.surface
-    else when (weatherType) {
-        com.elderdesktop.util.WeatherUtils.WeatherType.CLEAR -> if (isDay) Color(0xFF87CEEB) else Color(0xFF1A237E)
-        com.elderdesktop.util.WeatherUtils.WeatherType.CLOUDY,
-        com.elderdesktop.util.WeatherUtils.WeatherType.RAIN,
-        com.elderdesktop.util.WeatherUtils.WeatherType.SNOW,
-        com.elderdesktop.util.WeatherUtils.WeatherType.ATMOSPHERE -> if (isDay) Color(0xFFBDBDBD) else Color(0xFF424242)
-        else -> Color(0xFF1A5F7A)
-    }
-
-    Card(
-        modifier = modifier
-            .then(
-                if (isHighContrast) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
-                else Modifier
-            ),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = widgetBackgroundColor.copy(alpha = 0.9f)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "$marker $hour12:$minute",
-                fontSize = 40.sp * fontSizeMultiplier,
-                fontWeight = if (isHighContrast) FontWeight.Black else FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = dateString,
-                fontSize = 18.sp * fontSizeMultiplier,
-                fontWeight = if (isHighContrast) FontWeight.Bold else FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-private fun getTimeOfDayMarker(context: android.content.Context, locale: Locale, hour: Int): String {
-    return if (locale.language == "zh") {
-        when (hour) {
-            in 0..1 -> context.getString(R.string.time_midnight)
-            in 2..5 -> context.getString(R.string.time_dawn)
-            in 6..11 -> context.getString(R.string.time_morning)
-            in 12..13 -> context.getString(R.string.time_noon)
-            in 14..17 -> context.getString(R.string.time_afternoon)
-            else -> context.getString(R.string.time_evening)
-        }
-    } else {
-        if (hour < 12) "AM" else "PM"
-    }
-}
+// getTimeOfDayMarker has been moved to TimeUtils

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 import com.elderdesktop.DesktopSettings
 
 @Composable
@@ -28,6 +29,7 @@ fun ElderDesktopTheme(
     }
 
     val isHighContrast = settings.themeChoice == "high_contrast" || settings.highContrastMode
+    val isHolo = settings.uiStyle == "holo"
 
     val colorScheme = if (isHighContrast) {
         darkColorScheme(
@@ -42,6 +44,20 @@ fun ElderDesktopTheme(
             surfaceVariant = Color.Black,
             onSurfaceVariant = Color.White,
             outline = Color.White
+        )
+    } else if (isHolo) {
+        darkColorScheme(
+            primary = HoloBlue,
+            onPrimary = Color.Black,
+            secondary = HoloBlue,
+            onSecondary = Color.Black,
+            background = Color.Black,
+            onBackground = Color.White,
+            surface = Color.Black,
+            onSurface = Color.White,
+            surfaceVariant = HoloGray,
+            onSurfaceVariant = Color.White,
+            outline = HoloBlue
         )
     } else if (darkTheme) {
         darkColorScheme(
@@ -63,9 +79,25 @@ fun ElderDesktopTheme(
         else -> FontFamily.Default
     }
 
+    // Adjust shapes for Holo
+    val shapes = if (isHolo) {
+        androidx.compose.material3.Shapes(
+            small = androidx.compose.foundation.shape.RoundedCornerShape(2.dp),
+            medium = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+            large = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+        )
+    } else {
+        androidx.compose.material3.Shapes(
+            small = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+            medium = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            large = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+        )
+    }
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = getTypography(fontFamily, isHighContrast),
+        shapes = shapes,
         content = content
     )
 }
