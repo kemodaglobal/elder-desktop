@@ -3,16 +3,8 @@ package com.elderdesktop.settings.sections
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -26,6 +18,30 @@ fun LayoutSettingsSection(
     settings: DesktopSettings,
     onRefresh: () -> Unit
 ) {
+    var showScrollingPrompt by remember { mutableStateOf(false) }
+    var pendingLayoutAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    if (showScrollingPrompt) {
+        AlertDialog(
+            onDismissRequest = { showScrollingPrompt = false },
+            title = { Text(stringResource(R.string.scrolling_mode_prompt_title)) },
+            text = { Text(stringResource(R.string.scrolling_mode_prompt_desc)) },
+            confirmButton = {
+                Button(onClick = {
+                    pendingLayoutAction?.invoke()
+                    showScrollingPrompt = false
+                }) {
+                    Text(stringResource(R.string.enable))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showScrollingPrompt = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     Text(stringResource(R.string.layout), style = MaterialTheme.typography.titleLarge)
     
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -62,12 +78,32 @@ fun LayoutSettingsSection(
     }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        RadioButton(selected = !settings.useAutoLayout && settings.isSingleColScrolling, onClick = { settings.useAutoLayout = false; settings.useSingleColumnScrolling(); onRefresh() })
+        RadioButton(
+            selected = !settings.useAutoLayout && settings.isSingleColScrolling,
+            onClick = {
+                if (!settings.isScrollingMode) {
+                    pendingLayoutAction = { settings.useAutoLayout = false; settings.useSingleColumnScrolling(); onRefresh() }
+                    showScrollingPrompt = true
+                } else {
+                    settings.useAutoLayout = false; settings.useSingleColumnScrolling(); onRefresh()
+                }
+            }
+        )
         Text(stringResource(R.string.layout_scrolling_single), modifier = Modifier.padding(start = 8.dp))
     }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        RadioButton(selected = !settings.useAutoLayout && settings.isDoubleColScrolling, onClick = { settings.useAutoLayout = false; settings.useDoubleColumnScrolling(); onRefresh() })
+        RadioButton(
+            selected = !settings.useAutoLayout && settings.isDoubleColScrolling,
+            onClick = {
+                if (!settings.isScrollingMode) {
+                    pendingLayoutAction = { settings.useAutoLayout = false; settings.useDoubleColumnScrolling(); onRefresh() }
+                    showScrollingPrompt = true
+                } else {
+                    settings.useAutoLayout = false; settings.useDoubleColumnScrolling(); onRefresh()
+                }
+            }
+        )
         Text(stringResource(R.string.layout_scrolling_double), modifier = Modifier.padding(start = 8.dp))
     }
 

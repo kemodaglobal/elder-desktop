@@ -3,3 +3,10 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
 }
+
+subprojects {
+    tasks.register("androidTestCompileClasspath") {
+        group = "help"
+        description = "Dummy task to satisfy IDE selection for androidTestCompileClasspath configuration"
+    }
+}

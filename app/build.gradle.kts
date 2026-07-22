@@ -11,12 +11,17 @@ android {
     namespace = "com.elderdesktop"
     compileSdk = 37
 
+    val customTargetSdk = project.findProperty("elder.targetSdk")?.toString()?.toIntOrNull() ?: 37
+    if (customTargetSdk < 30) {
+        throw GradleException("targetSdk cannot be less than 30 to ensure baseline security and functionality.")
+    }
+
     defaultConfig {
         applicationId = "com.elderdesktop"
         minSdk = 23
-        targetSdk = 37
-        versionCode = 13
-        versionName = "1.0.12"
+        targetSdk = customTargetSdk
+        versionCode = 14
+        versionName = "1.0.13"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         signingConfig = signingConfigs.getByName("debug")
@@ -63,6 +68,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.palette.ktx)

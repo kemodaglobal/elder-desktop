@@ -1,5 +1,7 @@
 # Elder Desktop
 
+[English] | [简体中文](README_zh.md)
+
 This is a mobile home screen designed specifically for the elderly. This project is a pre-release version and may contain bugs; please report any issues via the Issues section.
 
 System Requirements:
@@ -32,4 +34,4 @@ This project is strictly open-source and non-commercial. The inclusion of any ad
 This software has not undergone Google Play authorization verification, and its installation will be blocked in the future; therefore, most mobile phones manufactured in mainland China remain unaffected.
 
 ## Licensing
-Comply with the [Apache License 2.0](https://github.com/kemodaglobal/elder-desktop/blob/master/LICENSE) and [Elder Desktop Additional Open Source Usage Rules](https://github.com/kemodaglobal/elder-desktop/blob/master/RULES.md) before using the source code.
+Comply with the [Apache License 2.0](https://github.com/kemodaglobal/elder-desktop/blob/master/LICENSE) and [Elder Desktop Additional Open Source Usage Rules](RULES.md) (or [Chinese version](RULES_zh.md)) before using the source code.

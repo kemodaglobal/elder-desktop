@@ -1,5 +1,7 @@
 # Elder Desktop Additional Open Source Usage Rules (Not a License Replacement)
 
+[English] | [简体中文](RULES_zh.md)
+
 This project is licensed under the Apache License 2.0.
 The following constitutes **Additional Usage Terms** applicable to all forking, modification, and redistribution activities.  
 The goal is to ensure a consistent user experience across old and new Android phones—particularly those used by seniors aged 60 to 80.

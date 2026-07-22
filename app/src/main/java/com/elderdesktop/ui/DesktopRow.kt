@@ -1,6 +1,7 @@
 package com.elderdesktop.ui
 
 import android.content.Intent
+import android.app.ActivityOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -56,14 +58,26 @@ fun DesktopRow(
     ) {
         if (rowItems.firstOrNull() is GridItem.ClockWidget) {
             Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                if (!settings.isBasicMode) {
+                if (settings.isScrollingMode) {
+                    // Simplified Weather Icon for Scrolling Mode
+                    val calendar = java.util.Calendar.getInstance()
+                    val isDay = calendar.get(java.util.Calendar.HOUR_OF_DAY) in 6..18
+                    val weatherType = com.elderdesktop.util.WeatherUtils.getWeatherType(weatherCode)
+                    
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        WeatherIcon(type = weatherType, isDay = isDay)
+                    }
+                } else if (!settings.isBasicMode) {
                     ClockWidget(
                         weatherText = weatherText, isWeatherAlert = isWeatherAlert,
                         locationCity = locationCity, currentTemperature = currentTemperature,
                         weatherCode = weatherCode,
                         modifier = Modifier.fillMaxSize(),
                         fontSizeMultiplier = settings.fontSizeMultiplier,
-                        onClick = { context.startActivity(Intent(context, WeatherActivity::class.java)) },
+                        onClick = {
+                            val options = ActivityOptions.makeCustomAnimation(context, com.elderdesktop.R.anim.fade_in, com.elderdesktop.R.anim.fade_out).toBundle()
+                            context.startActivity(Intent(context, WeatherActivity::class.java), options)
+                        },
                         onAddLocation = {
                             if (settings.usePasscode) {
                                 setIsAddingWeather(true)
@@ -110,11 +124,13 @@ fun DesktopRow(
                                                 showUnlockDialog()
                                             } else {
                                                 onAppLaunch(item.info)
-                                                context.startActivity(Intent(context, SettingsActivity::class.java))
+                                                val options = ActivityOptions.makeCustomAnimation(context, com.elderdesktop.R.anim.fade_in, com.elderdesktop.R.anim.fade_out).toBundle()
+                                                context.startActivity(Intent(context, SettingsActivity::class.java), options)
                                             }
                                         } else if (item.info.packageName == context.packageName && firstScreenMap[AppType.WEATHER]?.contains(item.info.packageName) == true) {
                                             onAppLaunch(item.info)
-                                            context.startActivity(Intent(context, WeatherActivity::class.java))
+                                            val options = ActivityOptions.makeCustomAnimation(context, com.elderdesktop.R.anim.fade_in, com.elderdesktop.R.anim.fade_out).toBundle()
+                                            context.startActivity(Intent(context, WeatherActivity::class.java), options)
                                         } else if (isCameraApp) {
                                             onAppLaunch(item.info)
                                             AppUtils.launchCamera(context)

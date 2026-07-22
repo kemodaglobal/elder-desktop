@@ -156,7 +156,7 @@ class DesktopSettings(context: Context) {
         set(value) = prefs.edit { putString("deepseek_api_key", value) }
 
     var aiProvider: String
-        get() = prefs.getString("ai_provider", "deepseek") ?: "deepseek" // deepseek, openai, google
+        get() = prefs.getString("ai_provider", "deepseek") ?: "deepseek" // deepseek, OpenAI, google
         set(value) = prefs.edit { putString("ai_provider", value) }
 
     var openAiApiKey: String
@@ -211,26 +211,31 @@ class DesktopSettings(context: Context) {
     fun use2x3() {
         layoutRows = 4
         layoutCols = 2
+        isScrollingMode = false
     }
     
     fun use3x4() {
         layoutRows = 5
         layoutCols = 3
+        isScrollingMode = false
     }
 
     fun use3x2() {
         layoutRows = 3
         layoutCols = 3
+        isScrollingMode = false
     }
 
     fun use4x3() {
         layoutRows = 4
         layoutCols = 4
+        isScrollingMode = false
     }
 
     fun use6x4() {
         layoutRows = 5
         layoutCols = 6
+        isScrollingMode = false
     }
     
     fun use1x2() {
@@ -249,11 +254,11 @@ class DesktopSettings(context: Context) {
         isScrollingMode = true
     }
     
-    val is2x3: Boolean get() = layoutCols == 2 && layoutRows == 4
-    val is3x4: Boolean get() = layoutCols == 3 && layoutRows == 5
-    val is3x2: Boolean get() = layoutCols == 3 && layoutRows == 3
-    val is4x3: Boolean get() = layoutCols == 4 && layoutRows == 4
-    val is6x4: Boolean get() = layoutCols == 6 && layoutRows == 5
+    val is2x3: Boolean get() = layoutCols == 2 && layoutRows == 4 && !isScrollingMode
+    val is3x4: Boolean get() = layoutCols == 3 && layoutRows == 5 && !isScrollingMode
+    val is3x2: Boolean get() = layoutCols == 3 && layoutRows == 3 && !isScrollingMode
+    val is4x3: Boolean get() = layoutCols == 4 && layoutRows == 4 && !isScrollingMode
+    val is6x4: Boolean get() = layoutCols == 6 && layoutRows == 5 && !isScrollingMode
     val is1x2: Boolean get() = layoutCols == 1 && layoutRows == 3 && !isScrollingMode
     val isSingleColScrolling: Boolean get() = layoutCols == 1 && isScrollingMode
     val isDoubleColScrolling: Boolean get() = layoutCols == 2 && isScrollingMode

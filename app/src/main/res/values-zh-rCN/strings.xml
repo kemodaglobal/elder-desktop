@@ -13,6 +13,9 @@
     <string name="layout_1x2">1 x 2 布局</string>
     <string name="layout_scrolling_single">单列纵向滚动</string>
     <string name="layout_scrolling_double">双列纵向滚动</string>
+    <string name="scrolling_mode_prompt_title">切换到纵向滚动模式？</string>
+    <string name="scrolling_mode_prompt_desc">在纵向滚动模式下，一键拨号和完整时钟/天气组件将不可用。组件将被替换为一个简单的天气图标。</string>
+    <string name="enable">开启</string>
     <string name="features">功能</string>
     <string name="voice_assistant_button">语音助手按钮</string>
     <string name="voice_assistant_mode">语音助手模式</string>

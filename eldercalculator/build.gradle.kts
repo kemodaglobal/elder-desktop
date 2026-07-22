@@ -7,10 +7,15 @@ android {
     namespace = "com.elderdesktop.calculator"
     compileSdk = 37
 
+    val customTargetSdk = project.findProperty("elder.targetSdk")?.toString()?.toIntOrNull() ?: 37
+    if (customTargetSdk < 30) {
+        throw GradleException("targetSdk cannot be less than 30 to ensure baseline security and functionality.")
+    }
+
     defaultConfig {
         applicationId = "com.elderdesktop.calculator"
         minSdk = 23
-        targetSdk = 37
+        targetSdk = customTargetSdk
         versionCode = 1
         versionName = "1.0"
 
@@ -47,9 +52,6 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)

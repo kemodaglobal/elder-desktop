@@ -1,4 +1,7 @@
 # The app's Target SDK documentation
+
+[English] | [简体中文](TARGET_SDK_DOCUMENTATION_zh.md)
+
 This is the documentation for `targetSdk`, intended to ensure compatibility with various new mobile phones.
 
 As it stands, the required target SDK for mainland China is 30 or higher (with a future requirement of 33 or higher).

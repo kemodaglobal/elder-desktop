@@ -13,6 +13,9 @@
     <string name="layout_1x2">1 x 2 Layout</string>
     <string name="layout_scrolling_single">Einspaltiges Scrollen</string>
     <string name="layout_scrolling_double">Zweispaltiges Scrollen</string>
+    <string name="scrolling_mode_prompt_title">In den Scroll-Modus wechseln?</string>
+    <string name="scrolling_mode_prompt_desc">Im Scroll-Modus sind die One-Touch-Kurzwahl und das vollständige Uhr-Widget nicht verfügbar. Das Widget wird durch ein einfaches Wetter-Symbol ersetzt.</string>
+    <string name="enable">Aktivieren</string>
     <string name="features">Funktionen</string>
     <string name="voice_assistant_button">Sprachassistent-Button</string>
     <string name="voice_assistant_mode">Sprachassistent-Modus</string>

@@ -13,6 +13,9 @@
     <string name="layout_1x2">1 x 2 レイアウト</string>
     <string name="layout_scrolling_single">1列縦スクロール</string>
     <string name="layout_scrolling_double">2列縦スクロール</string>
+    <string name="scrolling_mode_prompt_title">スクロールモードに切り替えますか？</string>
+    <string name="scrolling_mode_prompt_desc">スクロールモードでは、ワンタッチ短縮ダイヤルとフル時計ウィジェットは利用できません。ウィジェットはシンプルな天気アイコンに置き換えられます。</string>
+    <string name="enable">有効にする</string>
     <string name="features">機能</string>
     <string name="voice_assistant_button">音声アシスタントボタン</string>
     <string name="voice_assistant_mode">音声アシスタントモード</string>

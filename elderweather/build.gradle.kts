@@ -11,10 +11,15 @@ android {
     namespace = "com.elderdesktop.weather"
     compileSdk = 37
 
+    val customTargetSdk = project.findProperty("elder.targetSdk")?.toString()?.toIntOrNull() ?: 37
+    if (customTargetSdk < 30) {
+        throw GradleException("targetSdk cannot be less than 30 to ensure baseline security and functionality.")
+    }
+
     defaultConfig {
         applicationId = "com.elderdesktop.weather"
         minSdk = 23
-        targetSdk = 37
+        targetSdk = customTargetSdk
         versionCode = 1
         versionName = "1.0"
 
@@ -56,8 +61,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

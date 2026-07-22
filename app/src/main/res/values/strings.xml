@@ -13,6 +13,9 @@
     <string name="layout_1x2">1 x 2 Layout</string>
     <string name="layout_scrolling_single">Single Column (Scrolling)</string>
     <string name="layout_scrolling_double">Double Column (Scrolling)</string>
+    <string name="scrolling_mode_prompt_title">Switch to Scrolling Mode?</string>
+    <string name="scrolling_mode_prompt_desc">In scrolling mode, one-touch speed dial and the full clock widget are not available. The widget will be replaced by a simple weather icon.</string>
+    <string name="enable">Enable</string>
     <string name="features">Features</string>
     <string name="voice_assistant_button">Voice Assistant Button</string>
     <string name="voice_assistant_mode">Voice Assistant Mode</string>

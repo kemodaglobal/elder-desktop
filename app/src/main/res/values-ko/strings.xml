@@ -13,6 +13,9 @@
     <string name="layout_1x2">1 x 2 레이아웃</string>
     <string name="layout_scrolling_single">1열 세로 스크롤</string>
     <string name="layout_scrolling_double">2열 세로 스크롤</string>
+    <string name="scrolling_mode_prompt_title">세로 스크롤 모드로 전환할까요?</string>
+    <string name="scrolling_mode_prompt_desc">세로 스크롤 모드에서는 원터치 단축 다이얼과 전체 시계 위젯을 사용할 수 없습니다. 위젯은 간단한 날씨 아이콘으로 대체됩니다.</string>
+    <string name="enable">활성화</string>
     <string name="features">기능</string>
     <string name="voice_assistant_button">음성 비서 버튼</string>
     <string name="voice_assistant_mode">음성 비서 모드</string>

@@ -1,6 +1,7 @@
 package com.elderdesktop.ui
 
 import android.annotation.SuppressLint
+import android.app.ActivityOptions
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -225,11 +226,13 @@ fun DesktopLayout(
             finalPages.add(notificationRows)
         }
 
-        // Page 1: Contacts
-        val contactRows = (0 until effectiveRows).map { r ->
-            (0 until colCount).map { c -> GridItem.SpeedDial(r * colCount + c) }
+        // Page 1: Contacts (Speed Dial)
+        if (!settings.isScrollingMode) {
+            val contactRows = (0 until effectiveRows).map { r ->
+                (0 until colCount).map { c -> GridItem.SpeedDial(r * colCount + c) }
+            }
+            finalPages.add(contactRows)
         }
-        finalPages.add(contactRows)
 
         // Apps & Widget Paging with Row-based packing
         val appRows = mutableListOf<List<GridItem?>>()
@@ -387,10 +390,14 @@ fun DesktopLayout(
                 UnlockDialog(
                     settings = settings, pendingApp = pendingApp, pendingSpeedDialIndex = pendingSpeedDialIndex,
                     onUnlock = { app, index ->
-                        if (app != null) { onAppLaunch(app); context.startActivity(Intent(context, SettingsActivity::class.java)) }
+                        val options = ActivityOptions.makeCustomAnimation(context, R.anim.fade_in, R.anim.fade_out).toBundle()
+                        if (app != null) { 
+                            onAppLaunch(app)
+                            context.startActivity(Intent(context, SettingsActivity::class.java), options) 
+                        }
                         else if (index != -1) { editingSpeedDialIndex = index; showAddContactDialog = true }
                         else if (isAddingWeather) { showLocationSelectionDialog = true }
-                        else { context.startActivity(Intent(context, SettingsActivity::class.java)) }
+                        else { context.startActivity(Intent(context, SettingsActivity::class.java), options) }
                     },
                     onDismiss = { showUnlockDialog = false; pendingApp = null; pendingSpeedDialIndex = -1; isAddingWeather = false }
                 )
