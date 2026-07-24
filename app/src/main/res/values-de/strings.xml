@@ -170,6 +170,9 @@
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="privacy_agreement_title">Zustimmung zur Datenschutzerklärung</string>
     <string name="privacy_agreement_desc">Um grundlegende Launcher-Dienste bereitzustellen, benötigen wir bestimmte Berechtigungen. Bitte lesen und akzeptieren Sie unsere Datenschutzerklärung, bevor Sie fortfahren.</string>
+    <string name="root_warning_title">Sicherheitswarnung</string>
+    <string name="root_warning_message">Dieses Gerät scheint über Root-Zugriff zu verfügen. Während der Startbildschirm normal funktioniert, können gerootete Geräte leichter beschädigt werden, was dazu führen kann, dass das Telefon nicht mehr startet. Wir empfehlen ein Standardgerät ohne Root-Zugriff für die beste Erfahrung.</string>
+    <string name="root_warning_button">Verstanden</string>
     <string name="agree">Zustimmen</string>
     <string name="decline">Ablehnen</string>
     <string name="privacy_policy_content">

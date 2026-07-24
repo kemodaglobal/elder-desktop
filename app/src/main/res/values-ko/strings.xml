@@ -170,6 +170,9 @@
     <string name="privacy_policy">개인정보 처리방침</string>
     <string name="privacy_agreement_title">개인정보 처리방침 동의</string>
     <string name="privacy_agreement_desc">기본적인 런처 서비스를 제공하기 위해 몇 가지 권한이 필요합니다. 계속하기 전에 개인정보 처리방침을 읽고 동의해 주세요.</string>
+    <string name="root_warning_title">기기 보안 경고</string>
+    <string name="root_warning_message">이 기기는 \'루트\' 권한이 활성화된 것으로 보입니다. 홈 화면은 정상적으로 작동하지만, 루팅된 기기는 실수로 시스템을 손상시키기 쉬워 부팅이 불가능해질 수 있습니다. 최상의 경험을 위해 표준 비루팅 기기 사용을 권장합니다.</string>
+    <string name="root_warning_button">확인했습니다</string>
     <string name="agree">동의</string>
     <string name="decline">거부</string>
     <string name="privacy_policy_content">

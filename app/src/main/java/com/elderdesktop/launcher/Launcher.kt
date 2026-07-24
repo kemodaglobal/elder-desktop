@@ -33,8 +33,10 @@ import com.elderdesktop.model.AppInfo
 import com.elderdesktop.model.PermissionRationaleProvider
 import com.elderdesktop.ui.DesktopLayout
 import com.elderdesktop.ui.PermissionPurposePrompt
+import com.elderdesktop.ui.RootWarningDialog
 import com.elderdesktop.ui.theme.ElderDesktopTheme
 import com.elderdesktop.util.DeviceStateHelper
+import com.elderdesktop.util.RootUtils
 import com.elderdesktop.util.WeatherUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +52,7 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var weatherJob: Job? = null
     private var triggerSettingsUnlock by mutableStateOf(false)
+    private var showRootWarning by mutableStateOf(false)
     private val client = okhttp3.OkHttpClient()
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -101,6 +104,11 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
         enableEdgeToEdge()
         window.setBackgroundDrawableResource(android.R.color.transparent)
 
+        val settings = DesktopSettings(this)
+        if (RootUtils.isDeviceRooted() && !settings.rootWarningAcknowledged) {
+            showRootWarning = true
+        }
+
         DeviceStateHelper.updateOrientationLock(this)
         checkLocationPermissions()
 
@@ -127,6 +135,13 @@ class Launcher : ComponentActivity(), TextToSpeech.OnInitListener {
                             rationale = PermissionRationaleProvider.rationaleMessage,
                             modifier = Modifier.align(Alignment.TopCenter)
                         )
+
+                        if (showRootWarning) {
+                            RootWarningDialog(
+                                settings = settings,
+                                onDismiss = { showRootWarning = false }
+                            )
+                        }
                     }
                 }
             }

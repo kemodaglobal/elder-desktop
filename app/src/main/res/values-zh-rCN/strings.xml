@@ -170,6 +170,9 @@
     <string name="privacy_policy">隐私政策</string>
     <string name="privacy_agreement_title">隐私政策协议</string>
     <string name="privacy_agreement_desc">为了提供基本的桌面服务，我们需要某些权限。在继续之前，请阅读并同意我们的隐私政策。</string>
+    <string name="root_warning_title">设备安全提示</string>
+    <string name="root_warning_message">此手机似乎已启用“Root”权限。虽然主屏幕可以正常使用，但已 Root 的设备更容易被误操作损坏系统，可能导致手机无法启动。为了获得最佳体验，我们建议为老年人使用标准的非 Root 设备。</string>
+    <string name="root_warning_button">我知道了</string>
     <string name="agree">同意</string>
     <string name="decline">拒绝</string>
     <string name="privacy_policy_content">

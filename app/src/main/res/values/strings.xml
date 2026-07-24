@@ -170,6 +170,9 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="privacy_agreement_title">Privacy Policy Agreement</string>
     <string name="privacy_agreement_desc">To provide basic launcher services, we need certain permissions. Please read and agree to our Privacy Policy before continuing.</string>
+    <string name="root_warning_title">Device Security Warning</string>
+    <string name="root_warning_message">This phone appears to have \"Root\" access enabled. While the home screen will work normally, rooted devices are easier to accidentally damage, which could make the phone stop working. We recommend using a standard, non-rooted device for the best experience.</string>
+    <string name="root_warning_button">I Understand</string>
     <string name="agree">Agree</string>
     <string name="decline">Decline</string>
     <string name="privacy_policy_content">

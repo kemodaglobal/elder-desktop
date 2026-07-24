@@ -20,8 +20,8 @@ android {
         applicationId = "com.elderdesktop"
         minSdk = 23
         targetSdk = customTargetSdk
-        versionCode = 14
-        versionName = "1.0.13"
+        versionCode = 15
+        versionName = "1.0.14"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         signingConfig = signingConfigs.getByName("debug")

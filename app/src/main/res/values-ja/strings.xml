@@ -170,6 +170,9 @@
     <string name="privacy_policy">プライバシーポリシー</string>
     <string name="privacy_agreement_title">プライバシーポリシーへの同意</string>
     <string name="privacy_agreement_desc">基本的なランチャーサービスを提供するには、特定の権限が必要です。続行する前にプライバシーポリシーを読み、同意してください。</string>
+    <string name="root_warning_title">デバイスのセキュリティ警告</string>
+    <string name="root_warning_message">このデバイスは「ルート」アクセスが有効になっているようです。ホーム画面は正常に動作しますが、ルート化されたデバイスは誤ってシステムを損傷しやすく、起動できなくなる可能性があります。最高の体験のために、標準の非ルート化デバイスの使用をお勧めします。</string>
+    <string name="root_warning_button">了解しました</string>
     <string name="agree">同意する</string>
     <string name="decline">拒否する</string>
     <string name="privacy_policy_content">

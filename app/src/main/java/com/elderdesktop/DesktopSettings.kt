@@ -147,6 +147,10 @@ class DesktopSettings(context: Context) {
         get() = prefs.getBoolean("privacy_accepted", false)
         set(value) = prefs.edit { putBoolean("privacy_accepted", value) }
 
+    var rootWarningAcknowledged: Boolean
+        get() = prefs.getBoolean("root_warning_acknowledged", false)
+        set(value) = prefs.edit { putBoolean("root_warning_acknowledged", value) }
+
     var enableDeepSeek: Boolean
         get() = prefs.getBoolean("enable_deepseek", false)
         set(value) = prefs.edit { putBoolean("enable_deepseek", value) }
