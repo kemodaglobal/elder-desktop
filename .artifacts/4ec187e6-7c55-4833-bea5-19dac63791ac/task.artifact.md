@@ -1,0 +1,6 @@
+- [x] Create `RootUtils.kt` for root detection logic
+- [x] Add `rootWarningAcknowledged` to `DesktopSettings.kt`
+- [x] Add strings to `strings.xml`
+- [x] Create `RootWarningDialog.kt` UI component
+- [x] Integrate root check and dialog in `Launcher.kt`
+- [ ] Verify implementation
