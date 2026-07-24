@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "com.elderdesktop.camera"
     compileSdk {
-        version = release(37) {
+        version = release(36) {
             minorApiLevel = 1
         }
     }
@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.elderdesktop.camera"
-        minSdk = 23
+        minSdk = 21
         targetSdk = customTargetSdk
         versionCode = 1
         versionName = "1.0"
@@ -29,19 +29,19 @@ android {
     buildTypes {
         release {
             optimization {
-                enable = false
+                enable = true
             }
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         compose = true
     }
-    buildToolsVersion = "37.0.0"
-    ndkVersion = "29.0.14206865"
+    buildToolsVersion = "36.1.0"
+    ndkVersion = "27.3.13750724"
 }
 
 dependencies {

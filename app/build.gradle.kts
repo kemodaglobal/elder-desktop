@@ -9,16 +9,16 @@ kotlin {
 
 android {
     namespace = "com.elderdesktop"
-    compileSdk = 37
+    compileSdk = 36
 
-    val customTargetSdk = project.findProperty("elder.targetSdk")?.toString()?.toIntOrNull() ?: 37
+    val customTargetSdk = project.findProperty("elder.targetSdk")?.toString()?.toIntOrNull() ?: 36
     if (customTargetSdk < 30) {
         throw GradleException("targetSdk cannot be less than 30 to ensure baseline security and functionality.")
     }
 
     defaultConfig {
         applicationId = "com.elderdesktop"
-        minSdk = 23
+        minSdk = 21
         targetSdk = customTargetSdk
         versionCode = 15
         versionName = "1.0.14"
@@ -43,8 +43,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     buildFeatures {
@@ -52,8 +52,8 @@ android {
         buildConfig = true
     }
     compileSdkMinor = 1
-    buildToolsVersion = "37.0.0"
-    ndkVersion = "29.0.14206865"
+    buildToolsVersion = "36.1.0"
+    ndkVersion = "27.3.13750724"
 }
 
 dependencies {

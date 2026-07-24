@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.elderdesktop.calculator"
-    compileSdk = 37
+    compileSdk = 36
 
     val customTargetSdk = project.findProperty("elder.targetSdk")?.toString()?.toIntOrNull() ?: 37
     if (customTargetSdk < 30) {
@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.elderdesktop.calculator"
-        minSdk = 23
+        minSdk = 21
         targetSdk = customTargetSdk
         versionCode = 1
         versionName = "1.0"
@@ -30,15 +30,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         compose = true
     }
+    buildToolsVersion = "36.1.0"
+    ndkVersion = "27.3.13750724"
     compileSdkMinor = 1
-    buildToolsVersion = "37.0.0"
-    ndkVersion = "29.0.14206865"
 }
 
 dependencies {
